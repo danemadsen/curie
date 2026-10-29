@@ -1,0 +1,157 @@
+# Builds the signed release APKs and the Play bundle and uploads them as artifacts: pushes to main
+# and manual runs. Nothing is published; a release is made by hand from a build's artifacts.
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Only the newest build of a branch is worth keeping: a new push cancels the one still running
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # compileSdk 37, and the build tools AGP 9.5 defaults to (they also provide apksigner)
+  ANDROID_PLATFORM: android-37.0
+  BUILD_TOOLS_VERSION: 36.0.0
+  # Artifacts use the Actions storage of the owner's plan (500 MB on GitHub Free, accrued hourly), and
+  # a build's files take about 340 MB: keep them for a day, long enough to download them
+  ARTIFACT_RETENTION_DAYS: 1
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          # The version code counts the commits: fetch all of them, but only this revision's files
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platforms;${{ env.ANDROID_PLATFORM }} build-tools;${{ env.BUILD_TOOLS_VERSION }}
+          log-accepted-android-sdk-licenses: false
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Write the signing configuration
+        env:
+          ANDROID_SIGNING_KEYSTORE: ${{ secrets.ANDROID_SIGNING_KEYSTORE }}
+          ANDROID_UPLOAD_KEYSTORE: ${{ secrets.ANDROID_UPLOAD_KEYSTORE }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          for secret in ANDROID_SIGNING_KEYSTORE ANDROID_UPLOAD_KEYSTORE ANDROID_STORE_PASSWORD ANDROID_KEY_PASSWORD ANDROID_KEY_ALIAS; do
+            if [ -z "${!secret}" ]; then
+              echo "::error::The $secret repository secret is not set"
+              exit 1
+            fi
+          done
+
+          # The keystores stay outside the repository; only this job can read them
+          umask 077
+          signing_keystore="$RUNNER_TEMP/signing.jks"
+          upload_keystore="$RUNNER_TEMP/upload.jks"
+          printf '%s' "$ANDROID_SIGNING_KEYSTORE" | base64 --decode > "$signing_keystore"
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE" | base64 --decode > "$upload_keystore"
+
+          # java.util.Properties reads a backslash as an escape, so the values double theirs
+          store_password=$(printf '%s' "$ANDROID_STORE_PASSWORD" | sed 's/\\/\\\\/g')
+          key_password=$(printf '%s' "$ANDROID_KEY_PASSWORD" | sed 's/\\/\\\\/g')
+          key_alias=$(printf '%s' "$ANDROID_KEY_ALIAS" | sed 's/\\/\\\\/g')
+          {
+            printf 'signingKey=%s\n' "$signing_keystore"
+            printf 'uploadKey=%s\n' "$upload_keystore"
+            printf 'storePassword=%s\n' "$store_password"
+            printf 'keyPassword=%s\n' "$key_password"
+            printf 'keyAlias=%s\n' "$key_alias"
+          } > key.properties
+
+      - name: Build the release APKs and bundle
+        run: |
+          # The APKs are signed with the app signing key, the Play bundle with the upload key
+          ./gradlew :app:assembleRelease --console=plain
+          ./gradlew :app:bundleRelease -Pcurie.uploadKey=true --console=plain
+
+      - name: Collect the build files
+        run: |
+          mkdir -p build-files
+          for split in arm64-v8a x86_64 universal; do
+            mv "app/build/outputs/apk/release/app-$split-release.apk" "build-files/curie-android-$split.apk"
+          done
+          mv app/build/outputs/bundle/release/app-release.aab build-files/curie-android-bundle.aab
+          ls -l build-files
+
+      - name: Verify the signatures
+        run: |
+          apksigner="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner"
+          for apk in build-files/*.apk; do
+            echo "$apk"
+            "$apksigner" verify --print-certs "$apk"
+          done
+
+          # jarsigner also exits with 0 for an unsigned file: the bundle must say it verified
+          bundle_report=$(jarsigner -verify build-files/curie-android-bundle.aab)
+          echo "$bundle_report"
+          if ! grep -q '^jar verified' <<< "$bundle_report"; then
+            echo "::error::build-files/curie-android-bundle.aab is not signed"
+            exit 1
+          fi
+          keytool -printcert -jarfile build-files/curie-android-bundle.aab
+
+      - name: Upload the arm64-v8a APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-arm64-v8a
+          path: build-files/curie-android-arm64-v8a.apk
+          if-no-files-found: error
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+      - name: Upload the x86_64 APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-x86_64
+          path: build-files/curie-android-x86_64.apk
+          if-no-files-found: error
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+      - name: Upload the universal APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-universal
+          path: build-files/curie-android-universal.apk
+          if-no-files-found: error
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+      - name: Upload the Play bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-bundle
+          path: build-files/curie-android-bundle.aab
+          if-no-files-found: error
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}

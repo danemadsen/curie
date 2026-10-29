@@ -199,17 +199,19 @@ layout the app uses on the phone, with the LoRA assets next to the downloaded we
 
 ## Continuous integration
 
-[`.github/workflows/android.yml`](.github/workflows/android.yml) runs on pull requests to `main`,
-pushes to `main`, `v*` tags and manual runs:
+Two workflows run on GitHub Actions:
 
-| Job | Pull request | Push to `main`, manual run | `v*` tag |
-| --- | --- | --- | --- |
-| **Test** | Unit tests and lint | Unit tests and lint | Unit tests and lint |
-| **Build** | Debug APKs, as a build check | Signed release APKs and Play bundle, uploaded as artifacts | The same, after checking the version against the tag |
-| **Release** | | | A GitHub release with the three APKs |
+| Workflow | Runs on | Does |
+| --- | --- | --- |
+| [**Test**](.github/workflows/test.yml) | Pull requests to `main`, pushes to `main`, manual runs | Unit tests and lint |
+| [**Build**](.github/workflows/build.yml) | Pushes to `main`, manual runs | Signed release APKs and Play bundle, uploaded as artifacts |
 
-A new push to a pull request cancels the checks still running for the old one. The build checks
-every signature (`apksigner` for the APKs, `jarsigner` for the bundle) before uploading:
+Neither publishes anything: a release is made by hand from a build's artifacts. A new push to a
+pull request cancels the tests still running for the old one, and a new push to `main` cancels the
+build still running for the old one. When tests or lint fail, their reports are kept for seven days.
+
+The build checks every signature (`apksigner` for the APKs, `jarsigner` for the bundle) before
+uploading:
 
 | Artifact | File |
 | --- | --- |
@@ -219,33 +221,14 @@ every signature (`apksigner` for the APKs, `jarsigner` for the bundle) before up
 | `curie-android-bundle` | `curie-android-bundle.aab`, signed with the upload key |
 
 Artifacts count against the Actions storage in the repository owner's plan: 500 MB on GitHub Free
-and 1 GB on Pro, shared by the owner's private repositories and accrued hourly. One build's
-release files take about 340 MB, so the workflow keeps them for one day, long enough to download
-them; at that rate GitHub Free's storage covers up to about 45 builds a month. A tag build keeps
-its files for seven days, because its GitHub release holds the APKs but not the Play bundle
-(`RELEASE_FILES_RETENTION_DAYS` in the workflow). When tests or lint fail, their reports are kept
-for seven days.
-
-### Releases
-
-1. Set `versionName` in [`app/build.gradle.kts`](app/build.gradle.kts) to the new version, for
-   example `1.1.0`, and commit it.
-2. Tag that commit with the version and push the tag:
-
-   ```sh
-   git tag v1.1.0
-   git push origin v1.1.0
-   ```
-
-The build fails unless every APK's version name is the tag without its `v`, so a release always
-carries its tag's version. If it fails, delete the tag (`git tag --delete v1.1.0` and
-`git push --delete origin v1.1.0`), fix `versionName` and tag again. Otherwise the release job
-creates the GitHub release, with notes that GitHub generates from the changes since the previous
-release.
+and 1 GB on Pro, shared by the owner's private repositories and accrued hourly. One build's files
+take about 340 MB, so the build keeps them for one day, long enough to download them
+(`ARTIFACT_RETENTION_DAYS` in the workflow); at that rate GitHub Free's storage covers up to about
+45 builds a month.
 
 ### Repository secrets
 
-The release build needs these secrets (*Settings → Secrets and variables → Actions*):
+The build needs these secrets (*Settings → Secrets and variables → Actions*):
 
 | Secret | Value |
 | --- | --- |
