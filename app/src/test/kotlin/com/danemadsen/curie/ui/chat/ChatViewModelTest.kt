@@ -36,6 +36,7 @@ import com.danemadsen.curie.inference.FakeOmniEngine
 import com.danemadsen.curie.inference.FakePromptRenderer
 import com.danemadsen.curie.inference.FakeToolExecutor
 import com.danemadsen.curie.inference.ScriptedAnswer
+import com.danemadsen.curie.inference.SpeakableText
 import com.danemadsen.curie.inference.text
 import com.danemadsen.curie.tools.ToolOrigin
 import com.danemadsen.curie.ui.common.ModelStatus
@@ -310,6 +311,7 @@ class ChatViewModelTest {
     @Test
     fun anAppWaitsForTheSpokenReplyToEnd() = runTest(mainDispatcher) {
         val viewModel = newViewModel()
+        speech.finishesByItself = false
         val music = Intent("android.media.action.MEDIA_PLAY_FROM_SEARCH")
         tools.nextOutcome = FakeToolExecutor.success().copy(deferredLaunch = music)
         val arguments = JsonObject(emptyMap())
@@ -319,14 +321,16 @@ class ChatViewModelTest {
         viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
 
         viewModel.onAction(ChatAction.Send)
-        viewModel.awaitState { state -> !state.isGenerating && state.messages.lastOrNull()?.spokenReply != null }
+        val answered = viewModel.awaitState { state ->
+            !state.isGenerating && state.messages.lastOrNull()?.spokenReply != null
+        }
         runCurrent()
 
-        // The music app would cut the reply off
-        assertEquals(1, clips.played.size)
+        // The music app would cut the reply off, which is still playing out
+        assertEquals(answered.messages[1].id, answered.speakingMessageId)
         assertTrue(tools.startedLaunches.value.isEmpty())
 
-        clips.stop()
+        speech.finishPlaying()
         val started = tools.startedLaunches.first { launches -> launches.isNotEmpty() }
         assertEquals(listOf(music), started)
     }
@@ -501,13 +505,17 @@ class ChatViewModelTest {
         viewModel.onAction(ChatAction.Send)
         val answered = viewModel.awaitState { state -> !state.isGenerating && state.messages.getOrNull(1)?.spokenReply != null }
 
-        // The model could answer with speech; the reply was stored and played
+        // The model spoke the answer itself, and its speech played as it was made
         val (_, request) = mainConversation().generations.single()
-        assertEquals(GenerationMode.AUTO, request.mode)
+        assertEquals(GenerationMode.SPOKEN, request.mode)
+        assertEquals(1, speech.answers)
+        assertEquals(5 * 80 * 24, speech.samplesWritten)
+        assertTrue(speech.isAnswerComplete)
+
+        // It is kept for playing again, as a clip that has not played yet
         val reply = answered.messages[1]
-        assertEquals(ChatViewModel.replyClipId(reply.id), clips.played.single().first)
         assertEquals(5 * 80L, reply.spokenReply?.durationMillis)
-        assertTrue(clips.played.single().second.isFile)
+        assertTrue(clips.played.isEmpty())
     }
 
     @Test
@@ -554,7 +562,7 @@ class ChatViewModelTest {
     @Test
     fun aReplyThatMayNotPlaySaysWhy() = runTest(mainDispatcher) {
         val viewModel = newViewModel()
-        clips.refusesToPlay = true
+        speech.refusesToPlay = true
         fakeEngine.answer(ScriptedAnswer(text = "I heard you.", audioFrames = 5))
         viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
         viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
@@ -565,8 +573,24 @@ class ChatViewModelTest {
         // The speech is kept for later; another app has the audio now
         val expected = fixture.context.getString(R.string.audio_busy)
         assertEquals(ChatEvent.Notice(expected), notice)
-        assertTrue(clips.played.isEmpty())
+        assertEquals(0, speech.samplesWritten)
         viewModel.awaitState { state -> state.messages.getOrNull(1)?.spokenReply != null }
+    }
+
+    @Test
+    fun readingAloudTellsThePlayerHowLongTheTextTakes() = runTest(mainDispatcher) {
+        val viewModel = newViewModel()
+        fakeEngine.answer("A written answer.")
+        viewModel.send("Hello")
+        val answered = viewModel.awaitAnswer("A written answer.")
+        fakeEngine.answer(ScriptedAnswer(audioFrames = 2))
+
+        viewModel.onAction(ChatAction.Speak(answered.messages[1].id))
+        viewModel.awaitState { state -> state.messages[1].spokenReply != null }
+
+        // So that slow speech starts late enough to play without pauses
+        val expected = SpeakableText.estimatedSeconds("A written answer.")
+        assertEquals(expected, speech.expectedSeconds)
     }
 
     @Test

@@ -22,6 +22,12 @@ interface SpeechOutput {
 
     fun write(samples: FloatArray)
 
+    /**
+     * The answer's whole length, when it can be told in advance (a text read aloud): playback
+     * then starts as early as it can without running dry. Call it after [begin].
+     */
+    fun expectDuration(seconds: Double)
+
     /** No more samples come for this answer: what is buffered plays out. */
     fun endOfAnswer()
 

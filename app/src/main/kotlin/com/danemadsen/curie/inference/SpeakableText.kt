@@ -9,6 +9,9 @@ object SpeakableText {
     /** About 40 seconds of speech: well inside the speech conversation's 2,048 positions. */
     const val MAX_CHUNK_CHARS = 500
 
+    /** The model's pace for [estimatedSeconds], on the slow side of what it was measured at. */
+    const val SECONDS_PER_CHARACTER = 0.08
+
     private val CODE_BLOCK = Regex("```[\\s\\S]*?(```|$)")
     private val INLINE_CODE = Regex("`([^`]*)`")
     private val IMAGE = Regex("!\\[([^\\]]*)]\\([^)]*\\)")
@@ -24,6 +27,15 @@ object SpeakableText {
     private val BLANK_LINES = Regex("\\n{2,}")
     private val SPACES = Regex("[ \\t]+")
     private val SENTENCE_END = Regex("(?<=[.!?…])\\s+")
+
+    /**
+     * About how long reading [markdown] aloud takes, from the model's pace: 0.06 to 0.1 seconds a
+     * character of its plain text, depending on the pauses.
+     */
+    fun estimatedSeconds(markdown: String): Double {
+        val text = plainText(markdown)
+        return text.length * SECONDS_PER_CHARACTER
+    }
 
     /** [markdown] as plain text, paragraphs kept apart by blank lines. */
     fun plainText(markdown: String): String {

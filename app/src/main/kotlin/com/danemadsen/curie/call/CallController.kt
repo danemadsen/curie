@@ -25,6 +25,7 @@ import com.danemadsen.curie.inference.ContextWindow
 import com.danemadsen.curie.inference.EngineUnavailableException
 import com.danemadsen.curie.inference.SpeechSink
 import com.danemadsen.curie.inference.ToolExecutor
+import com.danemadsen.curie.inference.SpeakableText
 import com.danemadsen.curie.inference.ToolResults
 import com.danemadsen.curie.inference.WebLookups
 import com.danemadsen.curie.tools.ToolOrigin
@@ -412,6 +413,8 @@ class CallController(
     private suspend fun speakToTheEnd(hasSpoken: Boolean, text: String, sink: SpeechSink) {
         val needsReading = !hasSpoken && text.isNotBlank()
         if (needsReading) {
+            val expectedSeconds = SpeakableText.estimatedSeconds(text)
+            output.expectDuration(expectedSeconds)
             assistant.synthesize(text, sink)
             if (isInterrupted) {
                 return

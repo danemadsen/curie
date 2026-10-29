@@ -16,6 +16,13 @@ enum class GenerationMode {
 
     /** Interleaved text and speech: the answer opens with <|mixed_start|>. */
     INTERLEAVED,
+
+    /**
+     * An answer meant to be heard: interleaved text and speech like [INTERLEAVED], unless the model
+     * opens it with a tool call, which then runs as [TEXT] would. The likeliest first text token
+     * decides (forced interleaving never calls tools, and AUTO rarely chooses to speak).
+     */
+    SPOKEN,
 }
 
 /** Text token sampling; the model card recommends greedy decoding, the default. */

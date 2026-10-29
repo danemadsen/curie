@@ -10,6 +10,7 @@ import com.danemadsen.curie.engine.Lfm3Omni
 import com.danemadsen.curie.engine.generation.FinishReason
 import com.danemadsen.curie.engine.generation.GeneratedAnswer
 import com.danemadsen.curie.engine.generation.GenerationListener
+import com.danemadsen.curie.engine.generation.GenerationMode
 import com.danemadsen.curie.engine.generation.GenerationLoop
 import com.danemadsen.curie.engine.generation.GenerationRequest
 import com.danemadsen.curie.engine.generation.GenerationResult
@@ -115,22 +116,30 @@ internal class OnnxConversation(
         require(prompt.length > 0) { "the prompt is empty" }
         require(request.maxNewSlots >= 0) { "maxNewSlots must not be negative, got ${request.maxNewSlots}" }
         val lastPosition = prompt.length - 1
-        val start = GenerationStart.of(request.mode, prompt.tokens[lastPosition], prompt.sources[lastPosition])
-        val target = fedSequence(prompt, start.marker)
-        checkCapacity(target.length + request.maxNewSlots)
+        val promptStart = GenerationStart.of(request.mode, prompt.tokens[lastPosition], prompt.sources[lastPosition])
+        val target = fedSequence(prompt, promptStart.marker)
+        // A SPOKEN answer may still open with <|mixed_start|>
+        val markerRoom = if (request.mode == GenerationMode.SPOKEN) 1 else 0
+        checkCapacity(target.length + markerRoom + request.maxNewSlots)
         PromptChecks.validate(prompt)
         // The samplers check their settings: an invalid request fails before it waits or touches the cache
-        val suppressed = if (request.allowToolCalls) {
-            start.suppressed
-        } else {
-            start.suppressed + engine.markup.toolCallStart
-        }
-        val textSampler = TextSampler(request.textSampling, suppressed, random)
+        val promptSuppressed = suppressedTokens(promptStart, request.allowToolCalls)
+        val promptSampler = TextSampler(request.textSampling, promptSuppressed, random)
+        val speechSuppressed = suppressedTokens(GenerationStart.SPOKEN_SPEECH, request.allowToolCalls)
+        val speechSampler = TextSampler(request.textSampling, speechSuppressed, random)
         val maskGit = MaskGit(depth, orders, request.audioSampling, random)
 
         return whileRunning {
-            val prefilled = bringCacheTo(target, prompt, listener)
-            val outcome = if (prefilled) {
+            var start = promptStart
+            var textSampler = promptSampler
+            var isReady = bringCacheTo(target, prompt, listener)
+            if (isReady && request.mode == GenerationMode.SPOKEN && !opensWithToolCall(request, promptStart)) {
+                start = GenerationStart.SPOKEN_SPEECH
+                textSampler = speechSampler
+                isReady = CacheSlots().feed(Lfm3Omni.MIXED_START_TOKEN, codes = null)
+            }
+
+            val outcome = if (isReady) {
                 runSlots(start.mode, request.maxNewSlots, textSampler, maskGit, listener)
             } else {
                 LoopOutcome(emptyList(), FinishReason.CANCELLED, start.mode, textDone = false)
@@ -139,6 +148,36 @@ internal class OnnxConversation(
             val answer = GeneratedAnswer.of(start.marker, outcome, engine.tokenizer, engine.markup)
             GenerationResult(answer.content, answer.text, answer.toolCalls, answer.audioFrames, outcome.finishReason)
         }
+    }
+
+    private fun suppressedTokens(start: GenerationStart, allowToolCalls: Boolean): IntArray {
+        if (allowToolCalls) {
+            return start.suppressed
+        }
+        return start.suppressed + engine.markup.toolCallStart
+    }
+
+    /**
+     * Whether the likeliest first token of the answer the cache now ends at, among those TEXT may
+     * sample, is <tool_call>: a SPOKEN answer then calls its tools instead of speaking.
+     */
+    private fun opensWithToolCall(request: GenerationRequest, start: GenerationStart): Boolean {
+        if (!request.allowToolCalls) {
+            return false
+        }
+        val logits = FloatArray(Lfm3Omni.VOCAB_SIZE)
+        decoder.copyLogits(logits)
+        for (token in start.suppressed) {
+            logits[token] = Float.NEGATIVE_INFINITY
+        }
+
+        var likeliest = 0
+        for (token in logits.indices) {
+            if (logits[token] > logits[likeliest]) {
+                likeliest = token
+            }
+        }
+        return likeliest == engine.markup.toolCallStart
     }
 
     override fun prefill(prompt: Prompt, listener: GenerationListener): Boolean {

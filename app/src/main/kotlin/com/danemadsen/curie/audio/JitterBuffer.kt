@@ -5,20 +5,23 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 /**
- * The samples of one spoken answer between the speech decoder and the speaker. The model often
- * speaks slower than real time on a phone, so playback starts only once [startSeconds] are
- * buffered (or the answer is complete), and when it runs dry before the end it pauses until
- * [rebufferSeconds] more are buffered: a few longer pauses instead of a stutter.
+ * The samples of one spoken answer between the speech decoder and the speaker. On a phone the
+ * model often speaks slower than real time, and starting as soon as a little speech is in gives a
+ * pause every second or so. So playback waits until it can play to the end without running dry:
+ * speech that arrives at `r` seconds a second, with `R` seconds still to come, plays through once
+ * `R * (1 / r - 1)` seconds are buffered. `r` is measured as the speech arrives; `R` comes from the
+ * answer's length when it is known ([expectDuration], for a text read aloud), and is otherwise taken
+ * to be at least as long again as the answer so far, and no less than [ASSUMED_REMAINING_SECONDS].
+ * Should it run dry anyway, it waits again by the same rule, now knowing a longer answer.
  *
  * Thread-safe: one thread writes, another reads (and may wait with [awaitChange]).
  */
 class JitterBuffer(
-    sampleRate: Int,
-    startSeconds: Double = 1.0,
-    rebufferSeconds: Double = 0.5,
+    private val sampleRate: Int,
+    private val nanoTime: () -> Long = System::nanoTime,
 ) {
     enum class State {
-        /** Waiting for enough samples to start or resume; [read] returns nothing. */
+        /** Waiting until playback can go on without running dry; [read] returns nothing. */
         BUFFERING,
 
         PLAYING,
@@ -27,14 +30,17 @@ class JitterBuffer(
         FINISHED,
     }
 
-    private val startSamples = (sampleRate * startSeconds).toInt()
-    private val rebufferSamples = (sampleRate * rebufferSeconds).toInt()
     private val lock = ReentrantLock()
     private val changed = lock.newCondition()
     private val chunks = ArrayDeque<FloatArray>()
     private var headOffset = 0
     private var buffered = 0
-    private var threshold = startSamples
+
+    /** Samples written for this answer, played or not. */
+    private var produced = 0L
+    private var firstWriteNanos = 0L
+    private var lastWriteNanos = 0L
+    private var expectedSamples: Long? = null
     private var isComplete = false
     private var currentState = State.BUFFERING
     private var underrunCount = 0
@@ -50,6 +56,28 @@ class JitterBuffer(
     val underruns: Int
         get() = lock.withLock { underrunCount }
 
+    /**
+     * Seconds of speech that arrived a second, from the first sample to the last so far: below 1
+     * the model speaks slower than real time. 0 until speech has arrived for a while.
+     */
+    val arrivalSpeed: Double
+        get() = lock.withLock {
+            val elapsedSeconds = (lastWriteNanos - firstWriteNanos) / NANOS_PER_SECOND
+            if (produced == 0L || elapsedSeconds <= 0.0) {
+                return@withLock 0.0
+            }
+            val producedSeconds = produced.toDouble() / sampleRate
+            producedSeconds / elapsedSeconds
+        }
+
+    /** The answer's whole length, when it can be told in advance (a text read aloud). */
+    fun expectDuration(seconds: Double) {
+        lock.withLock {
+            expectedSamples = (seconds * sampleRate).toLong()
+            startIfReady()
+        }
+    }
+
     fun write(samples: FloatArray) {
         if (samples.isEmpty()) {
             return
@@ -58,11 +86,14 @@ class JitterBuffer(
             if (isComplete) {
                 return
             }
+            if (produced == 0L) {
+                firstWriteNanos = nanoTime()
+            }
             chunks.addLast(samples)
             buffered += samples.size
-            if (currentState == State.BUFFERING && buffered >= threshold) {
-                currentState = State.PLAYING
-            }
+            produced += samples.size
+            lastWriteNanos = nanoTime()
+            startIfReady()
             changed.signalAll()
         }
     }
@@ -110,7 +141,6 @@ class JitterBuffer(
                     currentState = State.FINISHED
                 } else {
                     currentState = State.BUFFERING
-                    threshold = rebufferSamples
                     underrunCount++
                 }
             }
@@ -119,13 +149,14 @@ class JitterBuffer(
         }
     }
 
-    /** Starts over for a new answer: drops everything and buffers [startSeconds] again. */
+    /** Starts over for a new answer: drops everything, and the next answer's length is unknown. */
     fun reset() {
         lock.withLock {
             chunks.clear()
             headOffset = 0
             buffered = 0
-            threshold = startSamples
+            produced = 0L
+            expectedSamples = null
             isComplete = false
             currentState = State.BUFFERING
             underrunCount = 0
@@ -140,7 +171,68 @@ class JitterBuffer(
         }
     }
 
-    private companion object {
-        val EMPTY = FloatArray(0)
+    /** Called with the lock held. */
+    private fun startIfReady() {
+        if (currentState == State.BUFFERING && canPlayThrough()) {
+            currentState = State.PLAYING
+            changed.signalAll()
+        }
+    }
+
+    /** Whether what is buffered lasts until the rest of the answer has arrived. Called with the lock held. */
+    private fun canPlayThrough(): Boolean {
+        val bufferedSeconds = buffered.toDouble() / sampleRate
+        if (produced == 0L || bufferedSeconds < MIN_START_SECONDS) {
+            return false
+        }
+        // The arrival speed needs a moment to be told apart from the first burst of samples
+        val elapsedSeconds = (nanoTime() - firstWriteNanos) / NANOS_PER_SECOND
+        if (elapsedSeconds < MEASURING_SECONDS) {
+            return false
+        }
+
+        val producedSeconds = produced.toDouble() / sampleRate
+        val arrivalSpeed = producedSeconds / elapsedSeconds
+        if (arrivalSpeed >= 1.0) {
+            return true
+        }
+        val remainingSeconds = remainingSeconds(producedSeconds)
+        val neededSeconds = remainingSeconds * (1.0 / arrivalSpeed - 1.0) * SAFETY_MARGIN
+        return bufferedSeconds >= neededSeconds
+    }
+
+    /** How much of the answer is still to arrive. Called with the lock held. */
+    private fun remainingSeconds(producedSeconds: Double): Double {
+        val expected = expectedSamples
+        if (expected == null) {
+            return maxOf(ASSUMED_REMAINING_SECONDS, producedSeconds)
+        }
+        // The estimate may fall short: an answer that outgrew it may go on for a quarter as long again
+        val expectedRemaining = (expected - produced).toDouble() / sampleRate
+        val overrun = producedSeconds * OUTGROWN_FRACTION
+        return maxOf(expectedRemaining, overrun, MIN_REMAINING_SECONDS)
+    }
+
+    companion object {
+        /** Never start (or resume) on less, unless the answer is complete. */
+        const val MIN_START_SECONDS = 0.5
+
+        /** How long speech arrives before its speed counts. */
+        const val MEASURING_SECONDS = 0.5
+
+        /** The least an answer of unknown length is taken to go on for. */
+        const val ASSUMED_REMAINING_SECONDS = 8.0
+
+        /** The least an answer of known length is taken to have still to come, until it is complete. */
+        const val MIN_REMAINING_SECONDS = 1.0
+
+        /** How much longer, as a share of what it has said, an answer that outgrew its expected length may go on. */
+        const val OUTGROWN_FRACTION = 0.25
+
+        /** Headroom for an arrival speed that drifts down as the answer goes on. */
+        const val SAFETY_MARGIN = 1.15
+
+        private const val NANOS_PER_SECOND = 1_000_000_000.0
+        private val EMPTY = FloatArray(0)
     }
 }

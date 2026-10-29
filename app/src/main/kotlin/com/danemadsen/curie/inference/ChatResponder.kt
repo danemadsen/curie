@@ -30,11 +30,14 @@ import java.time.LocalDate
 
 /** How an answer in a chat is produced. */
 data class ResponseOptions(
-    /** TEXT for typed messages; AUTO lets the model answer a voice message with speech. */
+    /** TEXT for a written answer; SPOKEN for one that will be heard, which the model then speaks itself. */
     val mode: GenerationMode,
 
     /** The user's name for the system prompt. */
     val userName: String,
+
+    /** Also gets the answer's speech as it is decoded, to play it while the answer is generated. */
+    val liveSpeech: SpeechSink? = null,
 )
 
 /** What answering produced. */
@@ -223,11 +226,15 @@ class ChatResponder(
         )
         val streamed = StreamedText(this, messageId, control)
 
-        // A typed message gets a written answer: TEXT mode cannot start speech, so nothing to decode
+        // A written answer cannot start speech, so there is nothing to decode
+        val liveSpeech = options.liveSpeech
         val speechSink = if (options.mode == GenerationMode.TEXT) {
             null
         } else {
-            SpeechSink { samples -> speech.appendSynchronized(samples) }
+            SpeechSink { samples ->
+                speech.appendSynchronized(samples)
+                liveSpeech?.onSamples(samples)
+            }
         }
         val window = synchronized(windows) { windows.getOrPut(chatId) { ContextWindow() } }
         try {

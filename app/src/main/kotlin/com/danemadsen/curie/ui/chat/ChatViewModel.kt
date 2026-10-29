@@ -40,10 +40,11 @@ import com.danemadsen.curie.engine.generation.GenerationMode
 import com.danemadsen.curie.inference.AssistantEngine
 import com.danemadsen.curie.inference.ChatHistory
 import com.danemadsen.curie.inference.ChatResponder
-import com.danemadsen.curie.inference.WebLookups
 import com.danemadsen.curie.inference.ChatResponse
 import com.danemadsen.curie.inference.ResponseOptions
+import com.danemadsen.curie.inference.SpeakableText
 import com.danemadsen.curie.inference.SpeechSink
+import com.danemadsen.curie.inference.WebLookups
 import com.danemadsen.curie.ui.common.ModelStatus
 import com.danemadsen.curie.ui.common.Persona
 import kotlinx.coroutines.CancellationException
@@ -488,25 +489,33 @@ class ChatViewModel(
         control: ChatResponder.AnswerControl,
     ) {
         val settings = dependencies.settings.first()
-        val mayAnswerAloud = isSpoken && settings.speakReplies != SpeakReplies.NEVER
-        val mode = if (mayAnswerAloud) GenerationMode.AUTO else GenerationMode.TEXT
-        val options = ResponseOptions(mode = mode, userName = settings.userName)
-
-        val response = responder.respond(chatId, messageId, options, control)
-        if (response.permissionsNeeded.isNotEmpty()) {
-            val permissions = response.permissionsNeeded.toList()
-            eventChannel.trySend(ChatEvent.RequestPermissions(permissions))
-        }
-        if (!response.isComplete) {
-            return
-        }
-
         val wantsSpeech = when (settings.speakReplies) {
             SpeakReplies.NEVER -> false
             SpeakReplies.VOICE_MESSAGES -> isSpoken
             SpeakReplies.ALWAYS -> true
         }
-        handleSpeech(response, wantsSpeech)
+
+        // A reply that will be heard is spoken by the model itself, and plays while it is generated
+        val liveSpeech = if (wantsSpeech) LiveSpeech(speechOutput) else null
+        val mode = if (wantsSpeech) GenerationMode.SPOKEN else GenerationMode.TEXT
+        val options = ResponseOptions(mode = mode, userName = settings.userName, liveSpeech = liveSpeech?.sink)
+
+        val response = try {
+            responder.respond(chatId, messageId, options, control)
+        } catch (error: Throwable) {
+            liveSpeech?.cancel()
+            throw error
+        }
+        if (response.permissionsNeeded.isNotEmpty()) {
+            val permissions = response.permissionsNeeded.toList()
+            eventChannel.trySend(ChatEvent.RequestPermissions(permissions))
+        }
+        if (!response.isComplete) {
+            liveSpeech?.cancel()
+            return
+        }
+
+        handleSpeech(response, wantsSpeech, liveSpeech)
 
         if (response.appLaunches.isNotEmpty()) {
             appLaunchJob = viewModelScope.launch {
@@ -552,17 +561,39 @@ class ChatViewModel(
         }
     }
 
-    private suspend fun handleSpeech(response: ChatResponse, wantsSpeech: Boolean) {
+    /**
+     * Stores the speech of a finished answer and lets what is still playing play out. An answer the
+     * model wrote instead of speaking (it can only call tools in writing) is read aloud.
+     */
+    private suspend fun handleSpeech(response: ChatResponse, wantsSpeech: Boolean, liveSpeech: LiveSpeech?) {
         val messageId = response.finalMessageId
         if (response.speech.isNotEmpty()) {
-            val file = storeSpeech(messageId, response.speech) ?: return
-            if (wantsSpeech) {
-                playClip(replyClipId(messageId), file)
-            }
+            storeSpeech(messageId, response.speech)
+        }
+
+        if (liveSpeech != null && liveSpeech.hasStarted) {
+            liveSpeech.finish()
+            showPlayingOut(messageId)
+            return
+        }
+        if (liveSpeech != null && liveSpeech.wasRefused) {
+            notify(context.getString(R.string.audio_busy))
             return
         }
         if (wantsSpeech && response.finalText.isNotBlank()) {
             readAloud(messageId, response.finalText)
+        }
+    }
+
+    /** Shows [messageId] as being read until its speech has played out; stopping it ends the speech. */
+    private fun showPlayingOut(messageId: String) {
+        speechJob = viewModelScope.launch {
+            session.update { current -> current.copy(readingMessageId = messageId) }
+            try {
+                speechOutput.awaitFinished()
+            } finally {
+                session.update { current -> current.copy(readingMessageId = null) }
+            }
         }
     }
 
@@ -649,6 +680,8 @@ class ChatViewModel(
                 return@launch
             }
 
+            val expectedSeconds = SpeakableText.estimatedSeconds(text)
+            speechOutput.expectDuration(expectedSeconds)
             session.update { current -> current.copy(readingMessageId = messageId) }
             try {
                 coroutineScope {

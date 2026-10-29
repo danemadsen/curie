@@ -30,8 +30,9 @@ class EngineCallAssistant(private val engine: AssistantEngine) : CallAssistant {
         window: ContextWindow,
         allowToolCalls: Boolean,
     ): GenerationResult {
+        // The model speaks its answers itself, unless it calls a tool first
         val request = GenerationRequest(
-            mode = GenerationMode.AUTO,
+            mode = GenerationMode.SPOKEN,
             maxNewSlots = ANSWER_SLOTS,
             allowToolCalls = allowToolCalls,
         )

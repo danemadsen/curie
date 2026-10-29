@@ -103,6 +103,14 @@ class FakeSpeechOutput(var finishesByItself: Boolean = false) : SpeechOutput {
         playing.value = true
     }
 
+    /** What the last answer was expected to last, when it was told. */
+    var expectedSeconds: Double? = null
+        private set
+
+    override fun expectDuration(seconds: Double) {
+        expectedSeconds = seconds
+    }
+
     override fun endOfAnswer() {
         isAnswerComplete = true
         if (finishesByItself) {

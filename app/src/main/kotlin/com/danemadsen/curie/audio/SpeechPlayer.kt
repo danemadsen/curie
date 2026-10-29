@@ -12,10 +12,12 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Locale
 
 /**
  * Streams spoken answers to an AudioTrack (24 kHz mono float, USAGE_ASSISTANT) through a
- * [JitterBuffer]. A playback thread moves samples from the buffer to the track in 20 ms chunks,
+ * [JitterBuffer], which holds back enough to play through without pauses when the model speaks
+ * slower than real time. A playback thread moves samples from the buffer to the track in 20 ms chunks,
  * pausing the track while the buffer re-fills and measuring the [level] of each chunk.
  *
  * With [holdsFocus] the player takes transient audio focus for each answer (reading a chat
@@ -94,6 +96,10 @@ class SpeechPlayer(
 
     override fun write(samples: FloatArray) {
         buffer.write(samples)
+    }
+
+    override fun expectDuration(seconds: Double) {
+        buffer.expectDuration(seconds)
     }
 
     override fun endOfAnswer() {
@@ -261,6 +267,9 @@ class SpeechPlayer(
             finished?.complete(true)
             finished = null
         }
+        // How smoothly speech played on this phone: "adb logcat -s SpeechPlayer"
+        val speed = "%.2f".format(Locale.ROOT, buffer.arrivalSpeed)
+        Log.i(TAG, "an answer played to its end: speech arrived at ${speed}x real time, ${buffer.underruns} pauses to re-buffer")
         pauseTrack()
         meter.reset()
         playing.value = false

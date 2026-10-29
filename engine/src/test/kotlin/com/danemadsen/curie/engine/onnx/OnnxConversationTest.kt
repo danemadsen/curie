@@ -181,6 +181,35 @@ class OnnxConversationTest {
     }
 
     @Test
+    fun aSpokenAnswerSpeaksUnlessItCallsATool() {
+        val golden = EngineGolden.generation("tool-call")
+        val tools = EngineGolden.tools(golden)
+        val spoken = GenerationRequest(GenerationMode.SPOKEN, maxNewSlots = 120, audioSampling = AudioSampling(temperature = 0f))
+
+        // The weather needs the tool: the answer calls it, as TEXT would, and says nothing yet
+        val weather = render(listOf(ChatMessage.user("What is the weather like in Paris right now?")), tools)
+        val call = freshAnswer(weather, spoken)
+        assertEquals(listOf("get_weather"), call.toolCalls.map { toolCall -> toolCall.name })
+        assertTrue(call.audioFrames.isEmpty())
+
+        // A greeting needs none: the answer opens an interleaved block and speaks its text
+        val greeting = render(listOf(ChatMessage.user("Hello! How are you today?")), tools)
+        val answer = freshAnswer(greeting, spoken)
+        assertTrue(answer.toolCalls.isEmpty())
+        assertEquals(Lfm3Omni.MIXED_START_TOKEN, answer.content.tokens.first())
+        assertTrue(answer.audioFrames.size > 10)
+        assertTrue(answer.text.isNotBlank())
+        println("spoken: ${answer.text} (${answer.audioFrames.size} frames)")
+
+        // Without tool calls it always speaks, and what it said replays as the next turn's history
+        val noTools = freshAnswer(weather, spoken.copy(allowToolCalls = false))
+        assertTrue(noTools.toolCalls.isEmpty())
+        assertTrue(noTools.audioFrames.isNotEmpty())
+        val followUp = render(listOf(ChatMessage.user("Hello! How are you today?"), answered(answer), ChatMessage.user("Thanks!")), tools)
+        assertTrue(freshAnswer(followUp, text).text.isNotBlank())
+    }
+
+    @Test
     fun aPrefilledSystemPromptIsKeptByTheFirstGeneration() {
         val system = ChatMessage.system("You are Curie, a friendly assistant. Keep answers short.")
         val warmUp = ChatTemplate.render(listOf(system), emptyList(), addGenerationPrompt = false, tokenizer)
