@@ -1,0 +1,408 @@
+{
+  "generator": "tools/golden/generate-media-golden.py",
+  "versions": {
+    "numpy": "2.5.4",
+    "pillow": "12.3.0",
+    "scipy": "1.18.1",
+    "soxr": "1.1.0",
+    "transformers": "5.21.0"
+  },
+  "resize": [
+    {
+      "name": "97x61-to-64x32",
+      "source": "resize/source-97x61.rgb",
+      "sourceWidth": 97,
+      "sourceHeight": 61,
+      "width": 64,
+      "height": 32,
+      "expected": "resize/97x61-to-64x32.rgb"
+    },
+    {
+      "name": "97x61-to-160x96",
+      "source": "resize/source-97x61.rgb",
+      "sourceWidth": 97,
+      "sourceHeight": 61,
+      "width": 160,
+      "height": 96,
+      "expected": "resize/97x61-to-160x96.rgb"
+    },
+    {
+      "name": "97x61-to-97x30",
+      "source": "resize/source-97x61.rgb",
+      "sourceWidth": 97,
+      "sourceHeight": 61,
+      "width": 97,
+      "height": 30,
+      "expected": "resize/97x61-to-97x30.rgb"
+    },
+    {
+      "name": "97x61-to-45x61",
+      "source": "resize/source-97x61.rgb",
+      "sourceWidth": 97,
+      "sourceHeight": 61,
+      "width": 45,
+      "height": 61,
+      "expected": "resize/97x61-to-45x61.rgb"
+    },
+    {
+      "name": "97x61-to-96x64",
+      "source": "resize/source-97x61.rgb",
+      "sourceWidth": 97,
+      "sourceHeight": 61,
+      "width": 96,
+      "height": 64,
+      "expected": "resize/97x61-to-96x64.rgb"
+    },
+    {
+      "name": "257x131-to-64x32",
+      "source": "resize/source-257x131.rgb",
+      "sourceWidth": 257,
+      "sourceHeight": 131,
+      "width": 64,
+      "height": 32,
+      "expected": "resize/257x131-to-64x32.rgb"
+    },
+    {
+      "name": "257x131-to-33x17",
+      "source": "resize/source-257x131.rgb",
+      "sourceWidth": 257,
+      "sourceHeight": 131,
+      "width": 33,
+      "height": 17,
+      "expected": "resize/257x131-to-33x17.rgb"
+    },
+    {
+      "name": "31x17-to-96x64",
+      "source": "resize/source-31x17.rgb",
+      "sourceWidth": 31,
+      "sourceHeight": 17,
+      "width": 96,
+      "height": 64,
+      "expected": "resize/31x17-to-96x64.rgb"
+    },
+    {
+      "name": "31x17-to-32x16",
+      "source": "resize/source-31x17.rgb",
+      "sourceWidth": 31,
+      "sourceHeight": 17,
+      "width": 32,
+      "height": 16,
+      "expected": "resize/31x17-to-32x16.rgb"
+    },
+    {
+      "name": "3x2-to-7x5",
+      "source": "resize/source-3x2.rgb",
+      "sourceWidth": 3,
+      "sourceHeight": 2,
+      "width": 7,
+      "height": 5,
+      "expected": "resize/3x2-to-7x5.rgb"
+    },
+    {
+      "name": "2x2-to-1x1",
+      "source": "resize/source-2x2.rgb",
+      "sourceWidth": 2,
+      "sourceHeight": 2,
+      "width": 1,
+      "height": 1,
+      "expected": "resize/2x2-to-1x1.rgb"
+    },
+    {
+      "name": "5x600-to-7x30",
+      "source": "resize/source-5x600.rgb",
+      "sourceWidth": 5,
+      "sourceHeight": 600,
+      "width": 7,
+      "height": 30,
+      "expected": "resize/5x600-to-7x30.rgb"
+    },
+    {
+      "name": "5x600-to-3x50",
+      "source": "resize/source-5x600.rgb",
+      "sourceWidth": 5,
+      "sourceHeight": 600,
+      "width": 3,
+      "height": 50,
+      "expected": "resize/5x600-to-3x50.rgb"
+    }
+  ],
+  "imagePatches": [
+    {
+      "name": "patchify-96x64",
+      "source": "vision/image-96x64.rgb",
+      "sourceWidth": 96,
+      "sourceHeight": 64,
+      "maxTokens": null,
+      "rows": 4,
+      "columns": 6,
+      "expected": "vision/patchify-96x64.f32"
+    },
+    {
+      "name": "image-100x60-max-4-tokens",
+      "source": "vision/image-100x60.rgb",
+      "sourceWidth": 100,
+      "sourceHeight": 60,
+      "maxTokens": 4,
+      "rows": 2,
+      "columns": 4,
+      "expected": "vision/image-100x60-max-4-tokens.f32"
+    }
+  ],
+  "videoPatches": [
+    {
+      "name": "patchify-3-frames-64x32",
+      "frames": [
+        "vision/patchify-3-frames-64x32-frame-0.rgb",
+        "vision/patchify-3-frames-64x32-frame-1.rgb",
+        "vision/patchify-3-frames-64x32-frame-2.rgb"
+      ],
+      "frameWidth": 64,
+      "frameHeight": 32,
+      "targetWidth": 64,
+      "targetHeight": 32,
+      "rows": 2,
+      "columns": 4,
+      "expected": [
+        "vision/patchify-3-frames-64x32-group-0.f32",
+        "vision/patchify-3-frames-64x32-group-1.f32"
+      ]
+    },
+    {
+      "name": "video-3-frames-50x40-to-64x32",
+      "frames": [
+        "vision/video-3-frames-50x40-to-64x32-frame-0.rgb",
+        "vision/video-3-frames-50x40-to-64x32-frame-1.rgb",
+        "vision/video-3-frames-50x40-to-64x32-frame-2.rgb"
+      ],
+      "frameWidth": 50,
+      "frameHeight": 40,
+      "targetWidth": 64,
+      "targetHeight": 32,
+      "rows": 2,
+      "columns": 4,
+      "expected": [
+        "vision/video-3-frames-50x40-to-64x32-group-0.f32",
+        "vision/video-3-frames-50x40-to-64x32-group-1.f32"
+      ]
+    },
+    {
+      "name": "video-4-frames-40x30-to-32x64",
+      "frames": [
+        "vision/video-4-frames-40x30-to-32x64-frame-0.rgb",
+        "vision/video-4-frames-40x30-to-32x64-frame-1.rgb",
+        "vision/video-4-frames-40x30-to-32x64-frame-2.rgb",
+        "vision/video-4-frames-40x30-to-32x64-frame-3.rgb"
+      ],
+      "frameWidth": 40,
+      "frameHeight": 30,
+      "targetWidth": 32,
+      "targetHeight": 64,
+      "rows": 4,
+      "columns": 2,
+      "expected": [
+        "vision/video-4-frames-40x30-to-32x64-group-0.f32",
+        "vision/video-4-frames-40x30-to-32x64-group-1.f32"
+      ]
+    }
+  ],
+  "melFilterBank": {
+    "frequencyBins": 201,
+    "melBins": 128,
+    "weights": "mel/filter-bank.f32"
+  },
+  "logMel": [
+    {
+      "name": "speech",
+      "samples": "mel/speech.f32",
+      "sampleCount": 48123,
+      "frames": 300,
+      "expected": "mel/speech-log-mel.f32"
+    },
+    {
+      "name": "chirp",
+      "samples": "mel/chirp.f32",
+      "sampleCount": 7777,
+      "frames": 48,
+      "expected": "mel/chirp-log-mel.f32"
+    },
+    {
+      "name": "noise-123",
+      "samples": "mel/noise-123.f32",
+      "sampleCount": 123,
+      "frames": 1,
+      "expected": "mel/noise-123-log-mel.f32"
+    },
+    {
+      "name": "noise-400",
+      "samples": "mel/noise-400.f32",
+      "sampleCount": 400,
+      "frames": 1,
+      "expected": "mel/noise-400-log-mel.f32"
+    },
+    {
+      "name": "noise-561",
+      "samples": "mel/noise-561.f32",
+      "sampleCount": 561,
+      "frames": 3,
+      "expected": "mel/noise-561-log-mel.f32"
+    }
+  ],
+  "inverseStft": [
+    {
+      "name": "random-1-rows",
+      "rows": "istft/random-1-rows.f32",
+      "rowCount": 1,
+      "nFft": 1280,
+      "hop": 320,
+      "expected": "istft/random-1-rows-wave.f32"
+    },
+    {
+      "name": "random-2-rows",
+      "rows": "istft/random-2-rows.f32",
+      "rowCount": 2,
+      "nFft": 1280,
+      "hop": 320,
+      "expected": "istft/random-2-rows-wave.f32"
+    },
+    {
+      "name": "random-23-rows",
+      "rows": "istft/random-23-rows.f32",
+      "rowCount": 23,
+      "nFft": 1280,
+      "hop": 320,
+      "expected": "istft/random-23-rows-wave.f32"
+    }
+  ],
+  "resample": [
+    {
+      "name": "44100-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/44100-to-16000-input.f32",
+      "fromRate": 44100,
+      "toRate": 16000,
+      "inputLength": 4417,
+      "expected": "resample/44100-to-16000-expected.f32",
+      "expectedLength": 1603
+    },
+    {
+      "name": "48000-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/48000-to-16000-input.f32",
+      "fromRate": 48000,
+      "toRate": 16000,
+      "inputLength": 4807,
+      "expected": "resample/48000-to-16000-expected.f32",
+      "expectedLength": 1603
+    },
+    {
+      "name": "22050-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/22050-to-16000-input.f32",
+      "fromRate": 22050,
+      "toRate": 16000,
+      "inputLength": 2212,
+      "expected": "resample/22050-to-16000-expected.f32",
+      "expectedLength": 1606
+    },
+    {
+      "name": "11025-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/11025-to-16000-input.f32",
+      "fromRate": 11025,
+      "toRate": 16000,
+      "inputLength": 1109,
+      "expected": "resample/11025-to-16000-expected.f32",
+      "expectedLength": 1610
+    },
+    {
+      "name": "8000-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/8000-to-16000-input.f32",
+      "fromRate": 8000,
+      "toRate": 16000,
+      "inputLength": 807,
+      "expected": "resample/8000-to-16000-expected.f32",
+      "expectedLength": 1614
+    },
+    {
+      "name": "96000-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/96000-to-16000-input.f32",
+      "fromRate": 96000,
+      "toRate": 16000,
+      "inputLength": 9607,
+      "expected": "resample/96000-to-16000-expected.f32",
+      "expectedLength": 1602
+    },
+    {
+      "name": "32000-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/32000-to-16000-input.f32",
+      "fromRate": 32000,
+      "toRate": 16000,
+      "inputLength": 3207,
+      "expected": "resample/32000-to-16000-expected.f32",
+      "expectedLength": 1604
+    },
+    {
+      "name": "24000-to-16000",
+      "reference": "resample_poly",
+      "input": "resample/24000-to-16000-input.f32",
+      "fromRate": 24000,
+      "toRate": 16000,
+      "inputLength": 2407,
+      "expected": "resample/24000-to-16000-expected.f32",
+      "expectedLength": 1605
+    },
+    {
+      "name": "16000-to-24000",
+      "reference": "resample_poly",
+      "input": "resample/16000-to-24000-input.f32",
+      "fromRate": 16000,
+      "toRate": 24000,
+      "inputLength": 1607,
+      "expected": "resample/16000-to-24000-expected.f32",
+      "expectedLength": 2411
+    },
+    {
+      "name": "24000-to-48000",
+      "reference": "resample_poly",
+      "input": "resample/24000-to-48000-input.f32",
+      "fromRate": 24000,
+      "toRate": 48000,
+      "inputLength": 2407,
+      "expected": "resample/24000-to-48000-expected.f32",
+      "expectedLength": 4814
+    },
+    {
+      "name": "44100-to-48000",
+      "reference": "resample_poly",
+      "input": "resample/44100-to-48000-input.f32",
+      "fromRate": 44100,
+      "toRate": 48000,
+      "inputLength": 4417,
+      "expected": "resample/44100-to-48000-expected.f32",
+      "expectedLength": 4808
+    },
+    {
+      "name": "speech-44100-to-16000",
+      "reference": "soxr_hq",
+      "input": "resample/speech-44100-to-16000-input.f32",
+      "fromRate": 44100,
+      "toRate": 16000,
+      "inputLength": 35280,
+      "expected": "resample/speech-44100-to-16000-expected.f32",
+      "expectedLength": 12800
+    },
+    {
+      "name": "speech-11025-to-16000",
+      "reference": "soxr_hq",
+      "input": "resample/speech-11025-to-16000-input.f32",
+      "fromRate": 11025,
+      "toRate": 16000,
+      "inputLength": 8820,
+      "expected": "resample/speech-11025-to-16000-expected.f32",
+      "expectedLength": 12800
+    }
+  ]
+}

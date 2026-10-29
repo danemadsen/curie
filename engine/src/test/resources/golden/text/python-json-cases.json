@@ -1,0 +1,287 @@
+[
+ {
+  "value": null,
+  "text": "null",
+  "dumps": "null",
+  "render": "null"
+ },
+ {
+  "value": true,
+  "text": "true",
+  "dumps": "true",
+  "render": "true"
+ },
+ {
+  "value": false,
+  "text": "false",
+  "dumps": "false",
+  "render": "false"
+ },
+ {
+  "value": 0,
+  "text": "0",
+  "dumps": "0",
+  "render": "0"
+ },
+ {
+  "value": 1,
+  "text": "1",
+  "dumps": "1",
+  "render": "1"
+ },
+ {
+  "value": -1,
+  "text": "-1",
+  "dumps": "-1",
+  "render": "-1"
+ },
+ {
+  "value": 42,
+  "text": "42",
+  "dumps": "42",
+  "render": "42"
+ },
+ {
+  "value": 12345678901234567890123,
+  "text": "12345678901234567890123",
+  "dumps": "12345678901234567890123",
+  "render": "12345678901234567890123"
+ },
+ {
+  "value": -98765432109876543210,
+  "text": "-98765432109876543210",
+  "dumps": "-98765432109876543210",
+  "render": "-98765432109876543210"
+ },
+ {
+  "value": 0.0,
+  "text": "0.0",
+  "dumps": "0.0",
+  "render": "0.0"
+ },
+ {
+  "value": -0.0,
+  "text": "-0.0",
+  "dumps": "-0.0",
+  "render": "-0.0"
+ },
+ {
+  "value": 1.0,
+  "text": "1.0",
+  "dumps": "1.0",
+  "render": "1.0"
+ },
+ {
+  "value": -1.5,
+  "text": "-1.5",
+  "dumps": "-1.5",
+  "render": "-1.5"
+ },
+ {
+  "value": 0.1,
+  "text": "0.1",
+  "dumps": "0.1",
+  "render": "0.1"
+ },
+ {
+  "value": 0.5,
+  "text": "0.5",
+  "dumps": "0.5",
+  "render": "0.5"
+ },
+ {
+  "value": 1e-05,
+  "text": "1e-05",
+  "dumps": "1e-05",
+  "render": "1e-05"
+ },
+ {
+  "value": 0.0001,
+  "text": "0.0001",
+  "dumps": "0.0001",
+  "render": "0.0001"
+ },
+ {
+  "value": 1e+16,
+  "text": "1e+16",
+  "dumps": "1e+16",
+  "render": "1e+16"
+ },
+ {
+  "value": 1000000000000000.0,
+  "text": "1000000000000000.0",
+  "dumps": "1000000000000000.0",
+  "render": "1000000000000000.0"
+ },
+ {
+  "value": 123456789.123,
+  "text": "123456789.123",
+  "dumps": "123456789.123",
+  "render": "123456789.123"
+ },
+ {
+  "value": 1.7976931348623157e+308,
+  "text": "1.7976931348623157e+308",
+  "dumps": "1.7976931348623157e+308",
+  "render": "1.7976931348623157e+308"
+ },
+ {
+  "value": 5e-324,
+  "text": "5e-324",
+  "dumps": "5e-324",
+  "render": "5e-324"
+ },
+ {
+  "value": 2.2250738585072014e-308,
+  "text": "2.2250738585072014e-308",
+  "dumps": "2.2250738585072014e-308",
+  "render": "2.2250738585072014e-308"
+ },
+ {
+  "value": Infinity,
+  "text": "Infinity",
+  "dumps": "Infinity",
+  "render": "inf"
+ },
+ {
+  "value": -Infinity,
+  "text": "-Infinity",
+  "dumps": "-Infinity",
+  "render": "-inf"
+ },
+ {
+  "value": NaN,
+  "text": "NaN",
+  "dumps": "NaN",
+  "render": "nan"
+ },
+ {
+  "value": "",
+  "text": "\"\"",
+  "dumps": "\"\"",
+  "render": ""
+ },
+ {
+  "value": "plain",
+  "text": "\"plain\"",
+  "dumps": "\"plain\"",
+  "render": "plain"
+ },
+ {
+  "value": "quote \" backslash \\ slash /",
+  "text": "\"quote \\\" backslash \\\\ slash /\"",
+  "dumps": "\"quote \\\" backslash \\\\ slash /\"",
+  "render": "quote \" backslash \\ slash /"
+ },
+ {
+  "value": "control \b\f\n\r\t \u0000 \u0001 \u001f \u007f",
+  "text": "\"control \\b\\f\\n\\r\\t \\u0000 \\u0001 \\u001f \\u007f\"",
+  "dumps": "\"control \\b\\f\\n\\r\\t \\u0000 \\u0001 \\u001f \u007f\"",
+  "render": "control \b\f\n\r\t \u0000 \u0001 \u001f \u007f"
+ },
+ {
+  "value": "unicode \u00fc \u00df \u4e2d\u6587 \ud83d\ude00 \u2028 \u2029 \ufeff \u0085",
+  "text": "\"unicode \\u00fc \\u00df \\u4e2d\\u6587 \\ud83d\\ude00 \\u2028 \\u2029 \\ufeff \\u0085\"",
+  "dumps": "\"unicode \u00fc \u00df \u4e2d\u6587 \ud83d\ude00 \u2028 \u2029 \ufeff \u0085\"",
+  "render": "unicode \u00fc \u00df \u4e2d\u6587 \ud83d\ude00 \u2028 \u2029 \ufeff \u0085"
+ },
+ {
+  "value": "lone surrogate \ud800 here",
+  "text": "\"lone surrogate \\ud800 here\"",
+  "dumps": "\"lone surrogate \ud800 here\"",
+  "render": "lone surrogate \ud800 here"
+ },
+ {
+  "value": [],
+  "text": "[]",
+  "dumps": "[]",
+  "render": "[]"
+ },
+ {
+  "value": {},
+  "text": "{}",
+  "dumps": "{}",
+  "render": "{}"
+ },
+ {
+  "value": [
+   1,
+   "two",
+   3.0,
+   null,
+   true,
+   [],
+   {}
+  ],
+  "text": "[1, \"two\", 3.0, null, true, [], {}]",
+  "dumps": "[1, \"two\", 3.0, null, true, [], {}]",
+  "render": "[1, \"two\", 3.0, null, true, [], {}]"
+ },
+ {
+  "value": {
+   "a": 1,
+   "b": [
+    1,
+    2,
+    {
+     "c": "d"
+    }
+   ],
+   "e": {
+    "f": null
+   }
+  },
+  "text": "{\"a\": 1, \"b\": [1, 2, {\"c\": \"d\"}], \"e\": {\"f\": null}}",
+  "dumps": "{\"a\": 1, \"b\": [1, 2, {\"c\": \"d\"}], \"e\": {\"f\": null}}",
+  "render": "{\"a\": 1, \"b\": [1, 2, {\"c\": \"d\"}], \"e\": {\"f\": null}}"
+ },
+ {
+  "value": {
+   "\u043a\u043b\u044e\u0447": "\u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435",
+   "emoji \ud83d\ude00": "\u2713"
+  },
+  "text": "{\"\\u043a\\u043b\\u044e\\u0447\": \"\\u0437\\u043d\\u0430\\u0447\\u0435\\u043d\\u0438\\u0435\", \"emoji \\ud83d\\ude00\": \"\\u2713\"}",
+  "dumps": "{\"\u043a\u043b\u044e\u0447\": \"\u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435\", \"emoji \ud83d\ude00\": \"\u2713\"}",
+  "render": "{\"\u043a\u043b\u044e\u0447\": \"\u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435\", \"emoji \ud83d\ude00\": \"\u2713\"}"
+ },
+ {
+  "value": {
+   "": ""
+  },
+  "text": "{\"\": \"\"}",
+  "dumps": "{\"\": \"\"}",
+  "render": "{\"\": \"\"}"
+ },
+ {
+  "value": [
+   [
+    [
+     [
+      [
+       [
+        "deep"
+       ]
+      ]
+     ]
+    ]
+   ]
+  ],
+  "text": "[[[[[[\"deep\"]]]]]]",
+  "dumps": "[[[[[[\"deep\"]]]]]]",
+  "render": "[[[[[[\"deep\"]]]]]]"
+ },
+ {
+  "value": {
+   "float list": [
+    0.1,
+    0.2,
+    0.30000000000000004,
+    1e+22,
+    1e-07
+   ]
+  },
+  "text": "{\"float list\": [0.1, 0.2, 0.30000000000000004, 1e+22, 1e-07]}",
+  "dumps": "{\"float list\": [0.1, 0.2, 0.30000000000000004, 1e+22, 1e-07]}",
+  "render": "{\"float list\": [0.1, 0.2, 0.30000000000000004, 1e+22, 1e-07]}"
+ }
+]

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose draws the UI edge to edge; the black window matches the splash screen, so the first frame does not flash -->
+    <style name="Theme.Curie" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/eclipse_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- The launch theme: the eclipse on black until MainActivity's installSplashScreen() switches to Theme.Curie -->
+    <style name="Theme.Curie.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/eclipse_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Curie</item>
+
+        <!-- Theme.SplashScreen follows the system's light or dark mode, but this splash screen is always black -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

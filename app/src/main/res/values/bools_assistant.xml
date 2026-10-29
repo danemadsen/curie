@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        The voice interaction service stack is off below Android 12: on Android 10 and 11, choosing a
+        voice interaction service as the assistant also makes its recognitionService the system-wide
+        default speech recognizer. There Curie qualifies as the assistant through the call screen's
+        ACTION_ASSIST filter instead.
+    -->
+    <bool name="curie_vis_enabled">false</bool>
+</resources>

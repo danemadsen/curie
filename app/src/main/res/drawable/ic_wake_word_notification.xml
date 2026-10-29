@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status bar icon for the "Hey Curie" notifications: a microphone. The system draws it by its alpha. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M9,6 A3,3 0 0 1 15,6 L15,11 A3,3 0 0 1 9,11 Z" />
+    <path
+        android:pathData="M6,11 A6,6 0 0 0 18,11 M12,17 L12,21 M9,21 L15,21"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round" />
+</vector>

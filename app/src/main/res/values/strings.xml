@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Curie</string>
+
+    <!-- Shared -->
+    <string name="common_back">Back</string>
+    <string name="common_yes">Yes</string>
+    <string name="common_no">No</string>
+
+    <!-- Model status, in the chat header pill and the settings -->
+    <string name="model_status_downloading">Downloading…</string>
+    <string name="model_status_downloading_percent">Downloading %1$d%%</string>
+    <string name="model_status_loading">Loading…</string>
+    <string name="model_status_error">Error</string>
+
+    <!-- Chat header -->
+    <string name="chat_open_drawer">Open chats</string>
+    <string name="chat_start_call">Call %1$s</string>
+    <string name="chat_model_status">show the model\'s status</string>
+
+    <!-- Drawer -->
+    <string name="drawer_title">Chats</string>
+    <string name="drawer_import">Import chats</string>
+    <string name="drawer_clear_all">Clear all chats</string>
+    <string name="drawer_new_chat">New chat</string>
+    <string name="drawer_settings">Settings</string>
+    <string name="drawer_untitled_chat">New Chat</string>
+    <string name="drawer_chat_options">Show chat options</string>
+    <string name="drawer_rename">Rename</string>
+    <string name="drawer_export">Export</string>
+    <string name="drawer_delete">Delete</string>
+    <string name="drawer_clear_confirm">Are you sure you want to clear all chats? This action cannot be undone.</string>
+
+    <!-- Messages -->
+    <string name="message_speak">Read aloud</string>
+    <string name="message_stop_speaking">Stop reading aloud</string>
+    <string name="message_regenerate">Regenerate</string>
+    <string name="message_edit">Edit</string>
+    <string name="message_edit_confirm">Save and resend</string>
+    <string name="message_edit_cancel">Cancel editing</string>
+    <string name="message_previous_version">Previous version</string>
+    <string name="message_next_version">Next version</string>
+    <string name="message_version_counter">%1$d / %2$d</string>
+    <string name="message_version">Version %1$d of %2$d</string>
+    <string name="message_delete">Delete message</string>
+    <string name="message_no_content">[No content]</string>
+    <string name="message_generating">Generating a reply</string>
+    <string name="message_image">Picture</string>
+    <string name="message_video">Video</string>
+    <string name="message_open_media">open</string>
+    <string name="message_voice_message">Voice message</string>
+    <string name="message_spoken_reply">%1$s\'s reply</string>
+
+    <!-- Audio clips -->
+    <string name="audio_play">play</string>
+    <string name="audio_pause">pause</string>
+    <string name="audio_position">%1$s of %2$s</string>
+
+    <!-- Composer -->
+    <string name="composer_clear_prompt">Clear Prompt</string>
+    <!-- Maid's placeholder, three dots included -->
+    <string name="composer_status_download">Download Curie to start chatting</string>
+    <string name="composer_status_downloading">Downloading Curie…</string>
+    <string name="composer_status_downloading_percent">Downloading Curie… %1$d%%</string>
+    <string name="composer_status_loading">Waking Curie up…</string>
+    <string name="composer_status_error">Curie is unavailable. Tap to fix</string>
+    <string name="composer_placeholder" tools:ignore="TypographyEllipsis">Type a message...</string>
+    <string name="composer_attach">Attach</string>
+    <string name="composer_pick_photo">Photo</string>
+    <string name="composer_pick_video">Video</string>
+    <string name="composer_take_photo">Take photo</string>
+    <string name="composer_record_video">Record video</string>
+    <string name="composer_remove_attachment">Remove attachment</string>
+    <string name="composer_send">Send</string>
+    <string name="composer_stop">Stop generating</string>
+    <string name="composer_record">Record a voice message</string>
+    <string name="composer_recording">Recording…</string>
+    <string name="composer_cancel_recording">Cancel recording</string>
+    <string name="composer_send_recording">Send voice message</string>
+
+    <!-- Call -->
+    <string name="call_status_connecting">Connecting…</string>
+    <string name="call_status_listening">Listening…</string>
+    <string name="call_status_thinking">Thinking…</string>
+    <string name="call_status_speaking">Speaking…</string>
+    <string name="call_status_muted">Microphone muted</string>
+    <string name="call_mute">Mute</string>
+    <string name="call_speaker">Speaker</string>
+    <string name="call_end">End call</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_user_title">User Settings</string>
+    <string name="settings_load_user_image">Load User Image</string>
+    <string name="settings_user_name">User Name</string>
+    <string name="settings_assistant_title">Assistant Settings</string>
+    <string name="settings_load_assistant_image">Load Assistant Image</string>
+    <string name="settings_assistant_name">Assistant Name</string>
+    <string name="settings_voice_title">Voice Assistant</string>
+    <string name="settings_read_aloud">Read replies aloud</string>
+    <string name="settings_read_aloud_never">Never</string>
+    <string name="settings_read_aloud_voice_messages">To voice messages</string>
+    <string name="settings_read_aloud_always">Always</string>
+    <string name="settings_wake_word">“Hey Curie”</string>
+    <string name="settings_wake_word_explanation">Start a call hands-free by saying “Hey Curie”. The phrase is recognised on this device, and a notification shows while it is listened for.</string>
+    <string name="settings_set_default_assistant">Set as default assistant</string>
+    <string name="settings_is_default_assistant">%1$s is your default assistant</string>
+    <string name="settings_microphone_needed">The microphone is needed for voice messages, calls and the wake word.</string>
+    <string name="settings_notifications_needed">Notifications are needed to show when the wake word is listened for.</string>
+    <string name="settings_allow">Allow</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_accent_color">Accent Color</string>
+    <string name="settings_system_colors">Match system colors</string>
+    <string name="settings_system_colors_explanation">Use your phone\'s wallpaper and accent colors.</string>
+    <plurals name="settings_hue_degrees">
+        <item quantity="one">%1$d degree</item>
+        <item quantity="other">%1$d degrees</item>
+    </plurals>
+    <string name="settings_model_title">Model</string>
+    <string name="settings_model_status">Status</string>
+    <string name="settings_model_size">Download size</string>
+    <string name="settings_model_not_downloaded">Not downloaded</string>
+    <string name="settings_model_ready">Ready</string>
+    <string name="settings_model_error">Error: %1$s</string>
+    <string name="settings_download_model">Download Model (%1$s)</string>
+    <string name="settings_cancel_download">Cancel Download</string>
+    <string name="settings_delete_model">Delete Model</string>
+    <string name="settings_redownload_model">Download Again</string>
+    <string name="settings_delete_model_confirm">Delete the model? Chats and calls need it, and getting it back means downloading %1$s again.</string>
+    <string name="settings_redownload_model_confirm">Delete the model and download it again? This downloads %1$s.</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_app_version">App Version</string>
+    <string name="settings_licenses">Open-Source Licenses</string>
+
+    <!-- Licenses -->
+    <string name="licenses_title">Licenses</string>
+
+    <!-- Setup -->
+    <string name="setup_tagline">A voice assistant that lives entirely on your phone.</string>
+    <string name="setup_feature_voice">Talk to it, or call it hands-free with “Hey Curie”.</string>
+    <string name="setup_feature_media">Show it photos and videos, or send it voice messages.</string>
+    <string name="setup_feature_private">Private by design: it runs on this device, even offline.</string>
+    <string name="setup_download">Download model (%1$s)</string>
+    <string name="setup_wifi_only">Download over Wi-Fi only</string>
+    <string name="setup_waiting_for_wifi">Waiting for Wi-Fi…</string>
+    <string name="setup_waiting_for_network">Waiting for a connection…</string>
+    <string name="setup_progress_bytes">%1$s of %2$s</string>
+    <string name="setup_progress_percent">%1$d%%</string>
+    <string name="setup_progress_speed">%1$s/s</string>
+    <string name="setup_progress_separator">" · "</string>
+    <string name="setup_verifying">Checking the download…</string>
+    <string name="setup_failed">The download failed.</string>
+    <string name="setup_failed_reason">The download failed: %1$s</string>
+    <string name="setup_retry">Retry</string>
+    <string name="setup_cancel">Cancel</string>
+</resources>

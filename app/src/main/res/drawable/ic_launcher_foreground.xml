@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The eclipse of art/eclipse.svg on the 108dp adaptive icon canvas. Its 420 x 420 artwork fills the
+  72dp visible area, so a 630 unit viewport keeps the artwork's units and centres it at 315, 315.
+  Theme.Curie.Starting also shows it as the splash screen icon.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="630"
+    android:viewportHeight="630">
+
+    <path android:pathData="M161.43103,315 A153.56897,153.56897 0 1,1 468.56897,315 A153.56897,153.56897 0 1,1 161.43103,315 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="315"
+                android:centerY="315"
+                android:gradientRadius="153.56897">
+                <!-- The moon: black out to 45 units -->
+                <item
+                    android:color="#FF000000"
+                    android:offset="0.29278076" />
+                <!-- The corona: brightest at 62 units, then fading into the background -->
+                <item
+                    android:color="#FFFEFEFE"
+                    android:offset="0.40106952" />
+                <item
+                    android:color="#00FBFBFB"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

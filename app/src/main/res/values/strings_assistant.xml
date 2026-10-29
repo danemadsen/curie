@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- "Hey Curie": the prominent disclosure, shown with consent buttons right before the permission prompts.
+         %1$s is the default speech recognition service, such as "Speech Recognition and Synthesis from Google",
+         always in the middle of a sentence. The _on_device text is for phones whose on-device recognizer
+         Curie prefers. -->
+    <string name="wake_word_disclosure_title">Turn on “Hey Curie”?</string>
+    <string name="wake_word_disclosure">Curie collects microphone audio to enable the “Hey Curie” wake word, even when the app is closed or not in use. The audio is recognised by %1$s, which may send it to its servers to do so. Curie doesn\'t save this audio. While Curie listens, a microphone indicator and a notification stay visible, and the battery drains faster.</string>
+    <string name="wake_word_disclosure_on_device">Curie collects microphone audio to enable the “Hey Curie” wake word, even when the app is closed or not in use. The audio is recognised by your phone\'s on-device speech recognition when it supports English, and otherwise by %1$s, which may send it to its servers to do so. Curie doesn\'t save this audio. While Curie listens, a microphone indicator and a notification stay visible, and the battery drains faster.</string>
+    <string name="wake_word_speech_service_generic">your phone\'s speech recognition service</string>
+    <string name="wake_word_disclosure_accept">Turn on</string>
+    <string name="wake_word_disclosure_decline">Not now</string>
+    <string name="wake_word_experimental">Experimental on this Android version: listening restarts every few seconds and may beep.</string>
+
+    <!-- "Hey Curie" states, shown in the settings and in the listening notification -->
+    <string name="wake_word_status_disabled">Off</string>
+    <string name="wake_word_status_missing_permission">Needs microphone access</string>
+    <string name="wake_word_status_listening">Listening</string>
+    <string name="wake_word_status_starting">Starting…</string>
+    <string name="wake_word_paused_open_app">Open Curie to resume</string>
+    <string name="wake_word_paused_notifications_blocked">Allow notifications so “Hey Curie” can open Curie</string>
+    <string name="wake_word_paused_too_hot">Paused while the phone is too warm</string>
+    <string name="wake_word_paused_battery_saver">Paused while Battery Saver is on</string>
+    <string name="wake_word_paused_low_battery">Paused while the battery is low</string>
+    <string name="wake_word_paused_microphone_in_use">Paused while Curie uses the microphone</string>
+    <string name="wake_word_paused_silenced">Paused while another app uses the microphone</string>
+    <string name="wake_word_unavailable_no_recognizer">This phone has no speech recognition service</string>
+    <string name="wake_word_unavailable_language">English (US) speech recognition isn\'t available on this phone</string>
+
+    <!-- "Hey Curie" notification channels, as listed in the app's notification settings -->
+    <string name="wake_word_channel_listening">“Hey Curie” listening</string>
+    <string name="wake_word_channel_listening_description">Shown while Curie listens for “Hey Curie”</string>
+    <string name="wake_word_channel_resume">“Hey Curie” paused</string>
+    <string name="wake_word_channel_resume_description">Lets you resume listening after Android stopped it</string>
+    <string name="wake_word_channel_heard">“Hey Curie” heard</string>
+    <string name="wake_word_channel_heard_description">Lets you talk to Curie when it can\'t open by itself</string>
+
+    <!-- "Hey Curie" notifications -->
+    <string name="wake_word_notification_listening_title">Listening for “Hey Curie”</string>
+    <string name="wake_word_notification_listening_text">Say “Hey Curie” to start a call</string>
+    <string name="wake_word_notification_status_title">“Hey Curie”</string>
+    <string name="wake_word_notification_turn_off">Turn off</string>
+    <string name="wake_word_notification_resume_title">“Hey Curie” is paused</string>
+    <string name="wake_word_notification_resume_text">Tap to resume listening</string>
+    <string name="wake_word_notification_resume_action">Resume</string>
+    <string name="wake_word_notification_heard_title">Curie is listening</string>
+    <string name="wake_word_notification_heard_text">Tap to talk</string>
+
+    <!-- Default digital assistant: Curie holds the role but Android has not switched its service on yet -->
+    <string name="assistant_role_reselect">To finish setting Curie up as the assistant, restart your phone, or choose another assistant and then Curie again.</string>
+
+    <!-- Tool chips: what an assistant action did, shown next to the reply ("Opening YouTube") -->
+    <string name="tool_summary_play_music">Playing “%1$s”</string>
+    <string name="tool_summary_youtube_search">Searching YouTube for “%1$s”</string>
+    <string name="tool_summary_media_play">Resumed playback</string>
+    <string name="tool_summary_media_pause">Paused playback</string>
+    <string name="tool_summary_media_next">Skipped to the next track</string>
+    <string name="tool_summary_media_previous">Went back a track</string>
+    <string name="tool_summary_set_volume">Volume set to %1$d%%</string>
+    <string name="tool_summary_navigate">Navigating to %1$s</string>
+    <string name="tool_summary_show_on_map">Showing %1$s on the map</string>
+    <string name="tool_summary_calling">Calling %1$s</string>
+    <string name="tool_summary_dialer">Ready to call %1$s</string>
+    <string name="tool_summary_text">Writing a text to %1$s</string>
+    <string name="tool_summary_email">Writing an email</string>
+    <string name="tool_summary_email_to">Writing an email to %1$s</string>
+    <string name="tool_summary_alarm">Alarm set for %1$s</string>
+    <string name="tool_summary_timer">Timer set for %1$s</string>
+    <string name="tool_summary_calendar">Adding “%1$s” to the calendar</string>
+    <string name="tool_summary_web_search">Searching the web for “%1$s”</string>
+    <string name="tool_summary_open_url">Opening %1$s</string>
+    <string name="tool_summary_open_app">Opening %1$s</string>
+    <string name="tool_summary_flashlight_on">Flashlight on</string>
+    <string name="tool_summary_flashlight_off">Flashlight off</string>
+    <string name="tool_summary_settings_wifi">Opening Wi-Fi settings</string>
+    <string name="tool_summary_settings_bluetooth">Opening Bluetooth settings</string>
+    <string name="tool_summary_settings_internet">Opening internet settings</string>
+    <string name="tool_summary_settings_volume">Opening sound settings</string>
+    <string name="tool_summary_settings_display">Opening display settings</string>
+    <string name="tool_summary_settings_battery">Opening battery settings</string>
+    <string name="tool_summary_settings_location">Opening location settings</string>
+    <string name="tool_summary_settings_app">Opening Curie\'s app settings</string>
+    <string name="tool_summary_device_status">Checked the time and battery</string>
+
+    <!-- Tool chips for actions that failed -->
+    <string name="tool_failure_play_music">Couldn\'t play music</string>
+    <string name="tool_failure_play_video">Couldn\'t find videos</string>
+    <string name="tool_failure_media">Couldn\'t control playback</string>
+    <string name="tool_failure_set_volume">Couldn\'t change the volume</string>
+    <string name="tool_failure_navigate">Couldn\'t start navigation</string>
+    <string name="tool_failure_show_on_map">Couldn\'t show the map</string>
+    <string name="tool_failure_call">Couldn\'t make the call</string>
+    <string name="tool_failure_text">Couldn\'t write the text</string>
+    <string name="tool_failure_email">Couldn\'t write the email</string>
+    <string name="tool_failure_alarm">Couldn\'t set the alarm</string>
+    <string name="tool_failure_timer">Couldn\'t set the timer</string>
+    <string name="tool_failure_calendar">Couldn\'t add the event</string>
+    <string name="tool_failure_web_search">Couldn\'t search the web</string>
+    <string name="tool_failure_open_url">Couldn\'t open the page</string>
+    <string name="tool_failure_open_app">Couldn\'t open the app</string>
+    <string name="tool_failure_flashlight">Couldn\'t switch the flashlight</string>
+    <string name="tool_failure_settings">Couldn\'t open settings</string>
+    <string name="tool_failure_device_status">Couldn\'t check the phone</string>
+    <string name="tool_failure_unknown">Couldn\'t do that</string>
+
+    <!-- Timer lengths in tool chips: "1 hour 30 minutes" -->
+    <plurals name="tool_duration_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <plurals name="tool_duration_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="tool_duration_seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
+</resources>

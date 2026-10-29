@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The metadata of CurieVoiceInteractionService. The system builds ComponentName(package, value), so
+    every class name is fully qualified. sessionService, recognitionService and supportsAssist="true"
+    are all required for Curie to be offered as the default digital assistant.
+-->
+<voice-interaction-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:recognitionService="com.danemadsen.curie.assistant.CurieRecognitionService"
+    android:sessionService="com.danemadsen.curie.assistant.CurieVoiceInteractionSessionService"
+    android:settingsActivity="com.danemadsen.curie.assistant.AssistantSettingsActivity"
+    android:supportsAssist="true"
+    android:supportsLaunchVoiceAssistFromKeyguard="true" />

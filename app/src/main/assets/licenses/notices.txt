@@ -1,0 +1,98 @@
+Curie open source notices
+=========================
+
+Curie runs the LFM3-Omni-2B model with ONNX Runtime and is built on the open source
+software below. Each entry names the file in this folder that holds its license.
+
+
+The model
+---------
+
+LFM3-Omni-2B (ONNX export), by Liquid AI, Inc.
+    https://huggingface.co/LiquidAI/LFM3-Omni-2B-ONNX
+    Revision 7d6bd3fd59a0622e5ce7fefc141145a8bba1435a. Curie downloads the model at
+    runtime; the app package does not contain it.
+    License: LFM Open License v1.0 (lfm-open-license-1.0.txt)
+
+The Curie voice (assets/lora in the app package)
+    decoder_q4.lora.onnx and depth_decoder.lora.onnx are modified copies of the
+    decoder_q4.onnx and depth_decoder.onnx graphs of LFM3-Omni-2B-ONNX: Curie added
+    LoRA inputs to them. decoder_q4.onnx_adapter and depth_decoder.onnx_adapter hold a
+    LoRA adapter for LiquidAI/LFM3-Audio-2B, whose language model and depth decoder
+    LFM3-Omni-2B shares.
+    License: LFM Open License v1.0 (lfm-open-license-1.0.txt)
+
+
+Libraries
+---------
+
+ONNX Runtime 1.31.1, by Microsoft Corporation
+    https://github.com/microsoft/onnxruntime
+    License: MIT (onnxruntime.txt)
+    The third-party software it is built from: onnxruntime-third-party-notices.txt
+
+Tabler Icons 3.50.0, by Paweł Kuna: icons of the user interface
+    https://tabler.io/icons
+    License: MIT (tabler-icons.txt)
+
+MaterialKolor, by Jordon de Hoog
+    https://github.com/jordond/materialkolor
+    License: MIT (materialkolor.txt)
+
+Colormath, by AJ Alt
+    https://github.com/ajalt/colormath
+    License: MIT (colormath.txt)
+
+Protocol Buffers, by Google Inc., as included in AndroidX DataStore
+    https://github.com/protocolbuffers/protobuf
+    License: BSD 3-Clause (protobuf.txt)
+
+Public Suffix List, by the Mozilla Foundation and its contributors, as included in OkHttp
+    https://publicsuffix.org (source: https://publicsuffix.org/list/public_suffix_list.dat)
+    License: Mozilla Public License 2.0 (mpl-2.0.txt)
+
+Apache License 2.0 (apache-2.0.txt):
+
+    Android Jetpack (AndroidX) libraries, by The Android Open Source Project: Activity,
+    Annotation, AppCompat Resources, Arch Core, Autofill, Collection, Compose (Animation,
+    Foundation, Material 3, Material Ripple, Runtime, UI), Concurrent, Core, Core
+    SplashScreen, CustomView, DataStore, Emoji2, ExifInterface, Graphics, Interpolator,
+    Lifecycle, Navigation, NavigationEvent, ProfileInstaller, Room, SavedState, SQLite,
+    Startup, Tracing, VectorDrawable, VersionedParcelable, Window and WorkManager
+        https://developer.android.com/jetpack/androidx
+
+    Compose Multiplatform, by JetBrains
+        https://github.com/JetBrains/compose-multiplatform
+
+    Kotlin standard library, kotlinx.coroutines, kotlinx.serialization,
+    kotlinx.collections.immutable and atomicfu, by JetBrains
+        https://kotlinlang.org
+
+    JetBrains Markdown and JetBrains Java Annotations, by JetBrains
+        https://github.com/JetBrains/markdown
+        https://github.com/JetBrains/java-annotations
+
+    Multiplatform Markdown Renderer, by Mike Penz
+        https://github.com/mikepenz/multiplatform-markdown-renderer
+
+    Material Color Utilities, by Google LLC, in MaterialKolor's Kotlin port
+        https://github.com/material-foundation/material-color-utilities
+
+    Coil
+        https://github.com/coil-kt/coil
+
+    OkHttp and Okio, by Square, Inc.
+        https://github.com/square/okhttp
+        https://github.com/square/okio
+
+    Accompanist Drawable Painter, by Google
+        https://github.com/google/accompanist
+
+    Guava ListenableFuture, by Google
+        https://github.com/google/guava
+
+    JSpecify
+        https://jspecify.dev
+
+    Poko, by Drew Hamilton
+        https://github.com/drewhamilton/Poko

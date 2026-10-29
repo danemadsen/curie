@@ -1,0 +1,7 @@
+# Model assets built by tools/lora/build-lora-assets.py: plain git files, never diffed or merged
+*.onnx binary
+*.onnx_adapter binary
+
+# Golden test data written by tools/golden/*.py: plain git files, never diffed or merged
+*.f32 binary
+*.rgb binary

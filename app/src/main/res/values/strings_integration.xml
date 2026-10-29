@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the chat flow, calls, setup and settings wiring (app-integration) -->
+<resources>
+    <!-- Answer errors, shown on the message (regenerate retries) -->
+    <string name="error_model_unavailable">Curie\'s model isn\'t ready. Check it in Settings, then try again.</string>
+    <string name="error_message_too_long">This is too long for Curie to take in at once. Try a shorter message or clip.</string>
+    <string name="error_answer_failed">Something went wrong while answering: %1$s</string>
+    <string name="error_out_of_memory">Curie ran out of memory for this message. Try a shorter clip or video.</string>
+    <string name="message_error_retry">Tap regenerate to try again.</string>
+    <string name="tool_skipped">Not done: too many actions in a row</string>
+
+    <!-- Attachments -->
+    <string name="attachment_unsupported">Curie can\'t read this file.</string>
+    <string name="attachment_too_large">This file is too large (the limit is %1$s).</string>
+    <string name="attachment_audio_too_long">Audio clips can be at most %1$s long.</string>
+    <string name="attachment_video_too_long">Videos can be at most %1$s long.</string>
+    <string name="attachment_unreadable">The file couldn\'t be opened.</string>
+    <string name="attachment_storage_failed">There isn\'t enough storage for this file.</string>
+    <string name="attachment_open_failed">No app can open this file.</string>
+    <plurals name="duration_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+
+    <!-- Voice messages -->
+    <string name="recording_microphone_needed">Allow the microphone to record voice messages.</string>
+    <string name="recording_microphone_busy">The microphone is in use.</string>
+    <string name="recording_failed">The microphone couldn\'t be used.</string>
+    <string name="recording_too_short">Hold on a little longer: the voice message was too short.</string>
+
+    <!-- Reading aloud and playing clips -->
+    <string name="speak_failed">Curie couldn\'t read this aloud.</string>
+    <string name="audio_busy">Another app is using the audio. Try again when it\'s done.</string>
+
+    <!-- A web search Curie did not open by itself, shown as a link -->
+    <string name="tool_link_open">Open</string>
+    <string name="tool_link_failed">No app on this phone can open it.</string>
+
+    <!-- Apps a chat answer opens once it is finished -->
+    <string name="apps_blocked_in_background">Curie couldn\'t open the app because it was in the background.</string>
+
+    <!-- Chat actions (renaming, deleting, switching versions) -->
+    <string name="chat_action_failed">That didn\'t work. Please try again.</string>
+
+    <!-- Chat import and export -->
+    <string name="import_done">Imported “%1$s”.</string>
+    <plurals name="import_skipped_attachments">
+        <item quantity="one">%1$d attachment couldn\'t be imported.</item>
+        <item quantity="other">%1$d attachments couldn\'t be imported.</item>
+    </plurals>
+    <plurals name="import_skipped_tool_calls">
+        <item quantity="one">%1$d damaged action was left out.</item>
+        <item quantity="other">%1$d damaged actions were left out.</item>
+    </plurals>
+    <string name="import_malformed">This isn\'t a Curie chat export.</string>
+    <string name="import_unsupported">This chat export comes from a newer version of Curie.</string>
+    <string name="import_too_large">This chat export is too large to import.</string>
+    <string name="import_unreadable">The chat export couldn\'t be read.</string>
+    <string name="import_storage_failed">There isn\'t enough storage to import this chat.</string>
+    <string name="export_done">Chat exported.</string>
+    <plurals name="export_omitted_attachments">
+        <item quantity="one">Chat exported. %1$d attachment was too large to include.</item>
+        <item quantity="other">Chat exported. %1$d attachments were too large to include.</item>
+    </plurals>
+    <string name="export_failed">The chat couldn\'t be exported.</string>
+    <string name="export_file_name">%1$s.json</string>
+
+    <!-- Model download failures (setup) -->
+    <string name="setup_failure_storage">Not enough free storage: %1$s more is needed.</string>
+    <string name="setup_failure_network">The connection kept failing.</string>
+    <string name="setup_failure_server">The server didn\'t send the right file.</string>
+    <string name="setup_failure_corrupt">A file arrived damaged and was deleted.</string>
+    <string name="setup_failure_write">The files couldn\'t be saved.</string>
+    <string name="setup_failure_install">Curie\'s voice files couldn\'t be installed.</string>
+    <string name="setup_failure_unknown">Something went wrong.</string>
+
+    <!-- Settings -->
+    <string name="settings_image_failed">That image couldn\'t be used.</string>
+    <string name="settings_saving_failed">The setting couldn\'t be saved.</string>
+    <string name="settings_delete_model_failed">Some model files couldn\'t be deleted.</string>
+
+    <!-- Calls -->
+    <string name="call_status_ended">Call ended</string>
+    <string name="call_answer_failed">Sorry, I couldn\'t answer that.</string>
+    <string name="call_tool_locked">Unlock your phone first</string>
+    <string name="call_channel_name">Calls</string>
+    <string name="call_channel_description">Shows while you are on a call with Curie</string>
+    <string name="call_notification_title">Call with %1$s</string>
+    <string name="call_notification_text">Tap to return to the call</string>
+    <string name="call_microphone_needed">Curie needs the microphone for calls.</string>
+</resources>

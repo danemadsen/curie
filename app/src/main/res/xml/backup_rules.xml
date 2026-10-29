@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 10 and 11: the same split as data_extraction_rules.xml, with the media included
+     only in device transfers. -->
+<full-backup-content>
+    <include domain="database" path="." />
+    <include domain="file" path="datastore/" />
+    <include domain="file" path="attachments/" requireFlags="deviceToDeviceTransfer" />
+    <include domain="file" path="speech/" requireFlags="deviceToDeviceTransfer" />
+    <include domain="file" path="profile/" requireFlags="deviceToDeviceTransfer" />
+</full-backup-content>

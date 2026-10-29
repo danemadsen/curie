@@ -1,0 +1,294 @@
+[
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n30\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 30}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nZ\u00fcrich\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"Z\u00fcrich\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\ntrue\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": true}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nfalse\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": false}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nnull\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": null}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1.0\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 1.0}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1e5\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 100000.0}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1E5\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 100000.0}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1e-7\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 1e-07}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n-0\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 0}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n-0.0\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": -0.0}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1.5e300\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 1.5e+300}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1e400\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": Infinity}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n-1e400\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": -Infinity}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n123456789012345678901234567890\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 123456789012345678901234567890}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n[1, 2]\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": [1, 2]}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n{\"a\": {\"b\": [true, null]}}\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": {\"a\": {\"b\": [true, null]}}}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n  42  \n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 42}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\t42\r\n\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": 42}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nabc\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"abc\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"quoted\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"quoted\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"with \\\"escapes\\\" \\n \\u00e9 \\/\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"with \\\"escapes\\\" \\n \u00e9 /\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"\\ud83d\\ude00\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\ud83d\ude00\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"\\ud800\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\ud800\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"\\udc00\\ud800\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\udc00\ud800\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"\\uZZZZ\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\\\"\\\\uZZZZ\\\"\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"tab\tinside\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\\\"tab\\tinside\\\"\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"del\u007finside\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"del\u007finside\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n01\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"01\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1.\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"1.\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n.5\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \".5\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n-\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"-\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n+1\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"+1\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nNaN\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": NaN}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nInfinity\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": Infinity}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n-Infinity\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": -Infinity}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nnan\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"nan\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\ninf\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"inf\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n1_000\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"1_000\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n0x10\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"0x10\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n[1,]\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"[1,]\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n[1 2]\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"[1 2]\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n{\"a\":1,}\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"{\\\"a\\\":1,}\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n{\"a\":1,\"a\":2}\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": {\"a\": 2}}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n{\"a\":1,\"b\":2,\"a\":3}\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": {\"a\": 3, \"b\": 2}}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n{'a': 1}\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"{'a': 1}\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\ufeff1\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\ufeff1\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\u00a01\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\u00a01\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\nline one\nline two\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"line one\\nline two\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\n\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\\n\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n[]\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": []}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n{}\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": {}}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\"\"\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\ntrue false\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"true false\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=probe>\n<parameter=value>\n\u0661\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"probe\", \"arguments\": {\"value\": \"\u0661\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=set_volume>\n<parameter=volume>\n30\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"set_volume\", \"arguments\": {\"volume\": 30}}]"
+ },
+ {
+  "text": "Sure.\n<tool_call>\n<function=a>\n<parameter=x>\n1\n</parameter>\n</function>\n</tool_call>\n\n<tool_call>\n<function=b>\n<parameter=y>\ntwo\n</parameter>\n</function>\n</tool_call>\nDone.",
+  "calls": "[{\"name\": \"a\", \"arguments\": {\"x\": 1}}, {\"name\": \"b\", \"arguments\": {\"y\": \"two\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=dup>\n<parameter=k>\n1\n</parameter>\n<parameter=other>\n2\n</parameter>\n<parameter=k>\n3\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"dup\", \"arguments\": {\"k\": 3, \"other\": 2}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=no_parameters>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"no_parameters\", \"arguments\": {}}]"
+ },
+ {
+  "text": "<tool_call><function=compact><parameter=x>1</parameter></function></tool_call>",
+  "calls": "[{\"name\": \"compact\", \"arguments\": {\"x\": 1}}]"
+ },
+ {
+  "text": "<tool_call>  \t\n<function=spaced>\n<parameter=x>\n1\n</parameter>\n</function> \n\t </tool_call>",
+  "calls": "[{\"name\": \"spaced\", \"arguments\": {\"x\": 1}}]"
+ },
+ {
+  "text": "<tool_call>\u3000<function=ideographic>\n</function>\u3000</tool_call>",
+  "calls": "[{\"name\": \"ideographic\", \"arguments\": {}}]"
+ },
+ {
+  "text": "<tool_call>\u001c<function=separator>\n</function>\u001c</tool_call>",
+  "calls": "[{\"name\": \"separator\", \"arguments\": {}}]"
+ },
+ {
+  "text": "<tool_call>\n<function= padded name >\n<parameter= padded key >\nv\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \" padded name \", \"arguments\": {\" padded key \": \"v\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=f>\n<parameter=a>\n\n\ntwo newlines\n\n\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"f\", \"arguments\": {\"a\": \"\\n\\ntwo newlines\\n\\n\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=f>\n<parameter=a>\n<parameter=b>\n2\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"f\", \"arguments\": {\"a\": \"<parameter=b>\\n2\"}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=f>\n<parameter=a>\n1\n</parameter>\n<parameter=unclosed>\n2\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"f\", \"arguments\": {\"a\": 1}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=incomplete>\n<parameter=a>\n1",
+  "calls": "[]"
+ },
+ {
+  "text": "<tool_call>\n<function=nested>\n</function>\n<tool_call>\n<function=inner>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"nested\", \"arguments\": {}}]"
+ },
+ {
+  "text": "<tool_call>\n<function=multi\nline>\n</function>\n</tool_call>",
+  "calls": "[]"
+ },
+ {
+  "text": "no tool calls at all",
+  "calls": "[]"
+ },
+ {
+  "text": "<tool_call>\n<function=\u00fcnicode_\u540d\u524d>\n<parameter=\u30ad\u30fc>\n\u5024\n</parameter>\n</function>\n</tool_call>",
+  "calls": "[{\"name\": \"\u00fcnicode_\u540d\u524d\", \"arguments\": {\"\u30ad\u30fc\": \"\u5024\"}}]"
+ }
+]

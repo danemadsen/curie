@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The themed icon: the launcher tints this shape, so the eclipse becomes its brightest part, a ring
+  from the moon's edge (45 units) to the peak of the corona (62 units) on the foreground's canvas.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="630"
+    android:viewportHeight="630">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M253.408,315 A61.592,61.592 0 1,1 376.592,315 A61.592,61.592 0 1,1 253.408,315 Z M270.038,315 A44.962,44.962 0 1,1 359.962,315 A44.962,44.962 0 1,1 270.038,315 Z" />
+</vector>

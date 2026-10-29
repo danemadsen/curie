@@ -1,0 +1,270 @@
+# Tests and lints every change, then builds the app:
+#   pull requests        debug APKs (a build check, nothing is uploaded)
+#   main, manual runs    signed release APKs and the Play bundle, uploaded as artifacts
+#   v* tags              the same, checked against the tag's version, plus a GitHub release with the APKs
+name: Android
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# A new push to a pull request cancels the checks still running for the old one. Elsewhere a
+# started run always finishes: the next one waits for it, replacing any older run still waiting
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # compileSdk 37, and the build tools AGP 9.5 defaults to (they also provide apksigner and aapt2)
+  ANDROID_PLATFORM: android-37.0
+  BUILD_TOOLS_VERSION: 36.0.0
+  # Artifacts use the Actions storage of the owner's plan (500 MB on GitHub Free, accrued hourly), and
+  # a build's release files take about 340 MB: keep them for a day. A tag build keeps them for a week,
+  # because its GitHub release holds the APKs but not the Play bundle
+  RELEASE_FILES_RETENTION_DAYS: ${{ startsWith(github.ref, 'refs/tags/v') && 7 || 1 }}
+  TEST_REPORTS_RETENTION_DAYS: 7
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          # The version code counts the commits: fetch all of them, but only this revision's files
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platforms;${{ env.ANDROID_PLATFORM }} build-tools;${{ env.BUILD_TOOLS_VERSION }}
+          log-accepted-android-sdk-licenses: false
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Test and lint
+        run: ./gradlew :engine:test :app:testDebugUnitTest :app:lintDebug --console=plain
+
+      - name: Upload the test and lint reports
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-reports
+          path: |
+            engine/build/reports/
+            engine/build/test-results/
+            app/build/reports/
+            app/build/test-results/
+          retention-days: ${{ env.TEST_REPORTS_RETENTION_DAYS }}
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          # The version code counts the commits: fetch all of them, but only this revision's files
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platforms;${{ env.ANDROID_PLATFORM }} build-tools;${{ env.BUILD_TOOLS_VERSION }}
+          log-accepted-android-sdk-licenses: false
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Build the debug APKs
+        if: github.event_name == 'pull_request'
+        run: ./gradlew :app:assembleDebug --console=plain
+
+      # Everything below builds the signed release, which pull requests never see
+
+      - name: Write the signing configuration
+        if: github.event_name != 'pull_request'
+        env:
+          ANDROID_SIGNING_KEYSTORE: ${{ secrets.ANDROID_SIGNING_KEYSTORE }}
+          ANDROID_UPLOAD_KEYSTORE: ${{ secrets.ANDROID_UPLOAD_KEYSTORE }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          for secret in ANDROID_SIGNING_KEYSTORE ANDROID_UPLOAD_KEYSTORE ANDROID_STORE_PASSWORD ANDROID_KEY_PASSWORD ANDROID_KEY_ALIAS; do
+            if [ -z "${!secret}" ]; then
+              echo "::error::The $secret repository secret is not set"
+              exit 1
+            fi
+          done
+
+          # The keystores stay outside the repository; only this job can read them
+          umask 077
+          signing_keystore="$RUNNER_TEMP/signing.jks"
+          upload_keystore="$RUNNER_TEMP/upload.jks"
+          printf '%s' "$ANDROID_SIGNING_KEYSTORE" | base64 --decode > "$signing_keystore"
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE" | base64 --decode > "$upload_keystore"
+
+          # java.util.Properties reads a backslash as an escape, so the values double theirs
+          store_password=$(printf '%s' "$ANDROID_STORE_PASSWORD" | sed 's/\\/\\\\/g')
+          key_password=$(printf '%s' "$ANDROID_KEY_PASSWORD" | sed 's/\\/\\\\/g')
+          key_alias=$(printf '%s' "$ANDROID_KEY_ALIAS" | sed 's/\\/\\\\/g')
+          {
+            printf 'signingKey=%s\n' "$signing_keystore"
+            printf 'uploadKey=%s\n' "$upload_keystore"
+            printf 'storePassword=%s\n' "$store_password"
+            printf 'keyPassword=%s\n' "$key_password"
+            printf 'keyAlias=%s\n' "$key_alias"
+          } > key.properties
+
+      - name: Build the release APKs and bundle
+        if: github.event_name != 'pull_request'
+        run: |
+          # The APKs are signed with the app signing key, the Play bundle with the upload key
+          ./gradlew :app:assembleRelease --console=plain
+          ./gradlew :app:bundleRelease -Pcurie.uploadKey=true --console=plain
+
+      - name: Collect the release files
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p release
+          for split in arm64-v8a x86_64 universal; do
+            mv "app/build/outputs/apk/release/app-$split-release.apk" "release/curie-android-$split.apk"
+          done
+          mv app/build/outputs/bundle/release/app-release.aab release/curie-android-bundle.aab
+          ls -l release
+
+      - name: Verify the signatures
+        if: github.event_name != 'pull_request'
+        run: |
+          apksigner="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner"
+          for apk in release/*.apk; do
+            echo "$apk"
+            "$apksigner" verify --print-certs "$apk"
+          done
+
+          # jarsigner also exits with 0 for an unsigned file: the bundle must say it verified
+          bundle_report=$(jarsigner -verify release/curie-android-bundle.aab)
+          echo "$bundle_report"
+          if ! grep -q '^jar verified' <<< "$bundle_report"; then
+            echo "::error::release/curie-android-bundle.aab is not signed"
+            exit 1
+          fi
+          keytool -printcert -jarfile release/curie-android-bundle.aab
+
+      - name: Check the version against the tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # The release is named after the tag, so tag vX.Y.Z needs versionName "X.Y.Z" in app/build.gradle.kts
+          expected_version="${GITHUB_REF_NAME#v}"
+          aapt2="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2"
+          for apk in release/*.apk; do
+            badging=$("$aapt2" dump badging "$apk")
+            version_name=$(sed -n "s/^package: .* versionName='\([^']*\)'.*/\1/p" <<< "$badging")
+            echo "$apk: versionName $version_name"
+            if [ "$version_name" != "$expected_version" ]; then
+              echo "::error::$apk has versionName '$version_name', but the tag $GITHUB_REF_NAME needs '$expected_version': set versionName in app/build.gradle.kts before tagging"
+              exit 1
+            fi
+          done
+
+      - name: Upload the arm64-v8a APK
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-arm64-v8a
+          path: release/curie-android-arm64-v8a.apk
+          if-no-files-found: error
+          retention-days: ${{ env.RELEASE_FILES_RETENTION_DAYS }}
+
+      - name: Upload the x86_64 APK
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-x86_64
+          path: release/curie-android-x86_64.apk
+          if-no-files-found: error
+          retention-days: ${{ env.RELEASE_FILES_RETENTION_DAYS }}
+
+      - name: Upload the universal APK
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-universal
+          path: release/curie-android-universal.apk
+          if-no-files-found: error
+          retention-days: ${{ env.RELEASE_FILES_RETENTION_DAYS }}
+
+      - name: Upload the Play bundle
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v6
+        with:
+          name: curie-android-bundle
+          path: release/curie-android-bundle.aab
+          if-no-files-found: error
+          retention-days: ${{ env.RELEASE_FILES_RETENTION_DAYS }}
+
+  release:
+    name: Release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The only job that writes: it creates the release
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download the release files
+        uses: actions/download-artifact@v8
+        with:
+          pattern: curie-android-*
+          path: release
+          merge-multiple: true
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" release/*.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Curie $GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag

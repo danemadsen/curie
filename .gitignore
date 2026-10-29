@@ -1,2 +1,21 @@
 tmp
 *.DS_Store
+
+# Gradle and Android Studio
+.gradle/
+build/
+.kotlin/
+local.properties
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing: credentials and keystores never enter the repository
+key.properties
+*.jks
+*.keystore
+
+# Python bytecode from running the tools/ and art/ scripts
+__pycache__/

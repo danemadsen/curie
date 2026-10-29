@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The sky behind the eclipse: the launcher icon background, the splash screen and the window background -->
+    <color name="eclipse_background">#FF000000</color>
+</resources>

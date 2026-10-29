@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Camera and recorder captures (AttachmentStore.createCaptureUri), and stored attachments opened
+     in a viewer app (one read grant per file), shared through the FileProvider with the authority
+     "${applicationId}.files" -->
+<paths>
+    <cache-path
+        name="captures"
+        path="captures/" />
+    <files-path
+        name="attachments"
+        path="attachments/" />
+</paths>

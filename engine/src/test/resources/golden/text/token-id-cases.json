@@ -1,0 +1,74 @@
+[
+ {
+  "token": "<|im_end|>",
+  "id": 124900
+ },
+ {
+  "token": "<|startoftext|>",
+  "id": 124894
+ },
+ {
+  "token": "<think>",
+  "id": 124901
+ },
+ {
+  "token": "</think>",
+  "id": 124902
+ },
+ {
+  "token": "<tool_call>",
+  "id": 125019
+ },
+ {
+  "token": "<|audio_out|>",
+  "id": 125032
+ },
+ {
+  "token": "\u0120the",
+  "id": 278
+ },
+ {
+  "token": "the",
+  "id": 1319
+ },
+ {
+  "token": "Hello",
+  "id": 35808
+ },
+ {
+  "token": "\u0120Hello",
+  "id": 59959
+ },
+ {
+  "token": "\u010a",
+  "id": 207
+ },
+ {
+  "token": "\u010a\u010a",
+  "id": 8
+ },
+ {
+  "token": "\u0120",
+  "id": 229
+ },
+ {
+  "token": ",",
+  "id": 20
+ },
+ {
+  "token": "not-a-token-at-all",
+  "id": null
+ },
+ {
+  "token": "",
+  "id": null
+ },
+ {
+  "token": " ",
+  "id": null
+ },
+ {
+  "token": "\u0120\u0120\u0120\u0120",
+  "id": 289
+ }
+]
