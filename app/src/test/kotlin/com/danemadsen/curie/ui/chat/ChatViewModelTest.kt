@@ -316,7 +316,8 @@ class ChatViewModelTest {
         tools.nextOutcome = FakeToolExecutor.success().copy(deferredLaunch = music)
         val arguments = JsonObject(emptyMap())
         fakeEngine.answer(ScriptedAnswer(toolCalls = listOf(ToolCall("set_timer", arguments))))
-        fakeEngine.answer(ScriptedAnswer(text = "Playing it.", audioFrames = 5))
+        fakeEngine.answer("Playing it.")
+        fakeEngine.answer(ScriptedAnswer(audioFrames = 5))
         viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
         viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
 
@@ -326,7 +327,7 @@ class ChatViewModelTest {
         }
         runCurrent()
 
-        // The music app would cut the reply off, which is still playing out
+        // The music app would cut the reply off, which is still being read
         assertEquals(answered.messages[1].id, answered.speakingMessageId)
         assertTrue(tools.startedLaunches.value.isEmpty())
 
@@ -498,24 +499,27 @@ class ChatViewModelTest {
     @Test
     fun aVoiceMessageIsAnsweredAloud() = runTest(mainDispatcher) {
         val viewModel = newViewModel()
-        fakeEngine.answer(ScriptedAnswer(text = "I heard you.", audioFrames = 5))
+        fakeEngine.answer("I heard you.")
+        fakeEngine.answer(ScriptedAnswer(audioFrames = 5))
         viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
         viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
 
         viewModel.onAction(ChatAction.Send)
-        val answered = viewModel.awaitState { state -> !state.isGenerating && state.messages.getOrNull(1)?.spokenReply != null }
+        val answered = viewModel.awaitState { state -> state.messages.getOrNull(1)?.spokenReply != null }
 
-        // The model spoke the answer itself, and its speech played as it was made
+        // The answer is written, then read aloud in the Curie voice, which only text to speech has
         val (_, request) = mainConversation().generations.single()
-        assertEquals(GenerationMode.SPOKEN, request.mode)
+        assertEquals(GenerationMode.TEXT, request.mode)
+        val speechConversation = fakeEngine.conversations.single { conversation ->
+            conversation.capacity == ConversationSlot.SPEECH.capacity
+        }
+        assertEquals(GenerationMode.SPEECH, speechConversation.generations.single().second.mode)
         assertEquals(1, speech.answers)
         assertEquals(5 * 80 * 24, speech.samplesWritten)
-        assertTrue(speech.isAnswerComplete)
 
-        // It is kept for playing again, as a clip that has not played yet
-        val reply = answered.messages[1]
-        assertEquals(5 * 80L, reply.spokenReply?.durationMillis)
-        assertTrue(clips.played.isEmpty())
+        // Its known length lets slow speech start late enough to play without pauses
+        assertEquals(SpeakableText.estimatedSeconds("I heard you."), speech.expectedSeconds)
+        assertEquals(5 * 80L, answered.messages[1].spokenReply?.durationMillis)
     }
 
     @Test
@@ -563,18 +567,21 @@ class ChatViewModelTest {
     fun aReplyThatMayNotPlaySaysWhy() = runTest(mainDispatcher) {
         val viewModel = newViewModel()
         speech.refusesToPlay = true
-        fakeEngine.answer(ScriptedAnswer(text = "I heard you.", audioFrames = 5))
+        fakeEngine.answer("I heard you.")
         viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
         viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
 
         viewModel.onAction(ChatAction.Send)
         val notice = viewModel.events.first()
 
-        // The speech is kept for later; another app has the audio now
+        // Another app has the audio: nothing is read aloud, and the answer can be read later
         val expected = fixture.context.getString(R.string.audio_busy)
         assertEquals(ChatEvent.Notice(expected), notice)
-        assertEquals(0, speech.samplesWritten)
-        viewModel.awaitState { state -> state.messages.getOrNull(1)?.spokenReply != null }
+        val speechConversations = fakeEngine.conversations.filter { conversation ->
+            conversation.capacity == ConversationSlot.SPEECH.capacity
+        }
+        assertTrue(speechConversations.isEmpty())
+        viewModel.awaitAnswer("I heard you.")
     }
 
     @Test

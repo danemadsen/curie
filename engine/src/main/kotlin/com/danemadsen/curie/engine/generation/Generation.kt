@@ -20,7 +20,8 @@ enum class GenerationMode {
     /**
      * An answer meant to be heard: interleaved text and speech like [INTERLEAVED], unless the model
      * opens it with a tool call, which then runs as [TEXT] would. The likeliest first text token
-     * decides (forced interleaving never calls tools, and AUTO rarely chooses to speak).
+     * decides (forced interleaving never calls tools, and AUTO rarely chooses to speak). Its speech
+     * is in the base model's voice: the bundled Curie LoRA only changes the voice of [SPEECH].
      */
     SPOKEN,
 }

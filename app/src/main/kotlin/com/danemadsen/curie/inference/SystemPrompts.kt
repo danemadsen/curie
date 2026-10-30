@@ -5,9 +5,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * The system prompts Curie sends. The modality instructions are the model card's: "Respond with
- * interleaved text and audio." at the end of the system prompt for spoken answers, and the TTS prompt
- * for reading a text aloud.
+ * The system prompts Curie sends. Answers are always written and then read aloud with the model
+ * card's TTS prompt: the Curie voice LoRA only speaks in that format, and the model's own spoken
+ * answers (interleaved text and audio) keep its base voice.
  *
  * A system prompt opens every conversation's cache, so it only changes when its inputs do: the date
  * is day-granular and the time of day comes from a tool instead.
@@ -31,8 +31,6 @@ object SystemPrompts {
         "You are talking with the user on a voice call: answer naturally in one to three short spoken " +
             "sentences, without lists, markdown or emoji."
 
-    private const val INTERLEAVED_SPEECH = "Respond with interleaved text and audio."
-
     private val DATE_FORMAT = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.ENGLISH)
 
     fun chat(userName: String, today: LocalDate): String {
@@ -41,7 +39,7 @@ object SystemPrompts {
     }
 
     fun call(userName: String, today: LocalDate): String {
-        val lines = listOf(PERSONA, CALL_STYLE, TOOL_GUIDANCE, context(userName, today), INTERLEAVED_SPEECH)
+        val lines = listOf(PERSONA, CALL_STYLE, TOOL_GUIDANCE, context(userName, today))
         return lines.joinToString("\n")
     }
 

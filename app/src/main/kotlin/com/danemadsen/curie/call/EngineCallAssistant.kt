@@ -30,9 +30,9 @@ class EngineCallAssistant(private val engine: AssistantEngine) : CallAssistant {
         window: ContextWindow,
         allowToolCalls: Boolean,
     ): GenerationResult {
-        // The model speaks its answers itself, unless it calls a tool first
+        // Written, then read aloud in the Curie voice, which only the TTS format has
         val request = GenerationRequest(
-            mode = GenerationMode.SPOKEN,
+            mode = GenerationMode.TEXT,
             maxNewSlots = ANSWER_SLOTS,
             allowToolCalls = allowToolCalls,
         )

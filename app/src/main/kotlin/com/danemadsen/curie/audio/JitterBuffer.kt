@@ -12,7 +12,9 @@ import kotlin.concurrent.withLock
  * `R * (1 / r - 1)` seconds are buffered. `r` is measured as the speech arrives; `R` comes from the
  * answer's length when it is known ([expectDuration], for a text read aloud), and is otherwise taken
  * to be at least as long again as the answer so far, and no less than [ASSUMED_REMAINING_SECONDS].
- * Should it run dry anyway, it waits again by the same rule, now knowing a longer answer.
+ * Speech arrives in bursts (the decoder's chunks, about a second each), so the buffer also has to
+ * bridge the longest wait between two of them. Should it run dry anyway, it waits again by the same
+ * rule, now knowing a longer answer.
  *
  * Thread-safe: one thread writes, another reads (and may wait with [awaitChange]).
  */
@@ -38,8 +40,12 @@ class JitterBuffer(
 
     /** Samples written for this answer, played or not. */
     private var produced = 0L
+
+    /** The first write's samples were made before it, in a time that cannot be measured. */
+    private var firstWriteSamples = 0
     private var firstWriteNanos = 0L
     private var lastWriteNanos = 0L
+    private var longestGapNanos = 0L
     private var expectedSamples: Long? = null
     private var isComplete = false
     private var currentState = State.BUFFERING
@@ -57,18 +63,11 @@ class JitterBuffer(
         get() = lock.withLock { underrunCount }
 
     /**
-     * Seconds of speech that arrived a second, from the first sample to the last so far: below 1
-     * the model speaks slower than real time. 0 until speech has arrived for a while.
+     * Seconds of speech that arrived a second, after the first write: below 1 the model speaks
+     * slower than real time. 0 until speech has arrived for a while.
      */
     val arrivalSpeed: Double
-        get() = lock.withLock {
-            val elapsedSeconds = (lastWriteNanos - firstWriteNanos) / NANOS_PER_SECOND
-            if (produced == 0L || elapsedSeconds <= 0.0) {
-                return@withLock 0.0
-            }
-            val producedSeconds = produced.toDouble() / sampleRate
-            producedSeconds / elapsedSeconds
-        }
+        get() = lock.withLock { measuredSpeed() ?: 0.0 }
 
     /** The answer's whole length, when it can be told in advance (a text read aloud). */
     fun expectDuration(seconds: Double) {
@@ -86,13 +85,17 @@ class JitterBuffer(
             if (isComplete) {
                 return
             }
+            val now = nanoTime()
             if (produced == 0L) {
-                firstWriteNanos = nanoTime()
+                firstWriteNanos = now
+                firstWriteSamples = samples.size
+            } else {
+                longestGapNanos = maxOf(longestGapNanos, now - lastWriteNanos)
             }
+            lastWriteNanos = now
             chunks.addLast(samples)
             buffered += samples.size
             produced += samples.size
-            lastWriteNanos = nanoTime()
             startIfReady()
             changed.signalAll()
         }
@@ -156,6 +159,8 @@ class JitterBuffer(
             headOffset = 0
             buffered = 0
             produced = 0L
+            firstWriteSamples = 0
+            longestGapNanos = 0L
             expectedSamples = null
             isComplete = false
             currentState = State.BUFFERING
@@ -182,23 +187,32 @@ class JitterBuffer(
     /** Whether what is buffered lasts until the rest of the answer has arrived. Called with the lock held. */
     private fun canPlayThrough(): Boolean {
         val bufferedSeconds = buffered.toDouble() / sampleRate
-        if (produced == 0L || bufferedSeconds < MIN_START_SECONDS) {
+        if (bufferedSeconds < MIN_START_SECONDS) {
             return false
         }
-        // The arrival speed needs a moment to be told apart from the first burst of samples
-        val elapsedSeconds = (nanoTime() - firstWriteNanos) / NANOS_PER_SECOND
-        if (elapsedSeconds < MEASURING_SECONDS) {
-            return false
-        }
+        val speed = measuredSpeed() ?: return false
 
-        val producedSeconds = produced.toDouble() / sampleRate
-        val arrivalSpeed = producedSeconds / elapsedSeconds
-        if (arrivalSpeed >= 1.0) {
-            return true
+        val gapSeconds = longestGapNanos / NANOS_PER_SECOND
+        if (speed >= 1.0) {
+            return bufferedSeconds >= gapSeconds
         }
+        val producedSeconds = produced.toDouble() / sampleRate
         val remainingSeconds = remainingSeconds(producedSeconds)
-        val neededSeconds = remainingSeconds * (1.0 / arrivalSpeed - 1.0) * SAFETY_MARGIN
-        return bufferedSeconds >= neededSeconds
+        val catchUpSeconds = remainingSeconds * (1.0 / speed - 1.0) * SAFETY_MARGIN
+        return bufferedSeconds >= catchUpSeconds + gapSeconds
+    }
+
+    /**
+     * Seconds of speech arriving a second, from what came after the first write; null until
+     * [MEASURING_SECONDS] have passed between the first write and the last. Called with the lock held.
+     */
+    private fun measuredSpeed(): Double? {
+        val elapsedSeconds = (lastWriteNanos - firstWriteNanos) / NANOS_PER_SECOND
+        if (produced == 0L || elapsedSeconds < MEASURING_SECONDS) {
+            return null
+        }
+        val arrivedSeconds = (produced - firstWriteSamples).toDouble() / sampleRate
+        return arrivedSeconds / elapsedSeconds
     }
 
     /** How much of the answer is still to arrive. Called with the lock held. */
@@ -217,7 +231,7 @@ class JitterBuffer(
         /** Never start (or resume) on less, unless the answer is complete. */
         const val MIN_START_SECONDS = 0.5
 
-        /** How long speech arrives before its speed counts. */
+        /** How long speech arrives, from the first write to the last, before its speed counts. */
         const val MEASURING_SECONDS = 0.5
 
         /** The least an answer of unknown length is taken to go on for. */
@@ -229,8 +243,8 @@ class JitterBuffer(
         /** How much longer, as a share of what it has said, an answer that outgrew its expected length may go on. */
         const val OUTGROWN_FRACTION = 0.25
 
-        /** Headroom for an arrival speed that drifts down as the answer goes on. */
-        const val SAFETY_MARGIN = 1.15
+        /** Headroom for an arrival speed that drops as the answer goes on (a busy or warm phone). */
+        const val SAFETY_MARGIN = 1.25
 
         private const val NANOS_PER_SECOND = 1_000_000_000.0
         private val EMPTY = FloatArray(0)

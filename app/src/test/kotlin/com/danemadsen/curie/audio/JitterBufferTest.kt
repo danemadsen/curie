@@ -19,17 +19,18 @@ class JitterBufferTest {
     }
 
     /**
-     * Speech of [totalMs] arriving at [speed] times real time, in 80 ms frames, played in 20 ms
-     * steps as a speaker would: returns how often playback ran dry and how long the listener waited
-     * before hearing anything.
+     * Speech of [totalMs] made at [speed] times real time in 80 ms frames and delivered in bursts of
+     * [framesPerWrite] frames, as the speech decoder does, then played in 20 ms steps as a speaker
+     * would: returns how often playback ran dry and how long the listener waited for the first sound.
      */
-    private fun simulate(totalMs: Int, speed: Double, expectedMs: Int? = null): Pair<Int, Int> {
+    private fun simulate(totalMs: Int, speed: Double, expectedMs: Int? = null, framesPerWrite: Int = 12): Pair<Int, Int> {
         if (expectedMs != null) {
             buffer.expectDuration(expectedMs / 1_000.0)
         }
         val frameMs = 80
         val msPerFrame = frameMs / speed
-        var written = 0
+        var made = 0
+        var pendingFrames = 0
         var nextFrameAt = msPerFrame
         var clockMs = 0
         var startedAtMs = -1
@@ -37,12 +38,17 @@ class JitterBufferTest {
         while (buffer.state != JitterBuffer.State.FINISHED) {
             clockMs += 20
             advance(20)
-            while (written < totalMs && clockMs >= nextFrameAt) {
-                buffer.write(samples(frameMs * sampleRate / 1_000))
-                written += frameMs
+            while (made < totalMs && clockMs >= nextFrameAt) {
+                made += frameMs
+                pendingFrames++
                 nextFrameAt += msPerFrame
             }
-            if (written >= totalMs) {
+            val isLastBurst = made >= totalMs && pendingFrames > 0
+            if (pendingFrames >= framesPerWrite || isLastBurst) {
+                buffer.write(samples(pendingFrames * frameMs * sampleRate / 1_000))
+                pendingFrames = 0
+            }
+            if (made >= totalMs && pendingFrames == 0) {
                 buffer.complete()
             }
             val played = buffer.read(20 * sampleRate / 1_000)
@@ -54,20 +60,29 @@ class JitterBufferTest {
     }
 
     @Test
-    fun speechFasterThanRealTimeStartsAfterHalfASecond() {
+    fun speechFasterThanRealTimeStartsWithItsSecondBurst() {
         val (underruns, startedAtMs) = simulate(totalMs = 6_000, speed = 1.3)
 
         assertEquals(0, underruns)
-        assertTrue(startedAtMs in 500..1_000, "started at $startedAtMs ms")
+        assertTrue(startedAtMs in 1_400..1_600, "started at $startedAtMs ms")
+    }
+
+    @Test
+    fun aTextReadAloudAtNearRealTimePlaysThrough() {
+        // Measured on the emulator: 9 s of speech at 0.87x real time, in the decoder's 0.96 s bursts
+        val (underruns, startedAtMs) = simulate(totalMs = 9_000, speed = 0.87, expectedMs = 9_400)
+
+        assertEquals(0, underruns)
+        assertTrue(startedAtMs < 4_000, "started at $startedAtMs ms")
     }
 
     @Test
     fun slowSpeechOfAKnownLengthPlaysThroughWithoutAPause() {
-        // At half speed a 10 s text takes 20 s to make: playback can start once 5 s are in
+        // At half speed a 10 s text takes 20 s to make: playback starts about half way
         val (underruns, startedAtMs) = simulate(totalMs = 10_000, speed = 0.5, expectedMs = 10_000)
 
         assertEquals(0, underruns)
-        assertTrue(startedAtMs in 10_000..13_000, "started at $startedAtMs ms")
+        assertTrue(startedAtMs in 10_000..15_000, "started at $startedAtMs ms")
     }
 
     @Test
@@ -89,13 +104,14 @@ class JitterBufferTest {
     }
 
     @Test
-    fun theArrivalSpeedIsMeasuredFromFirstToLastSample() {
+    fun theFirstBurstDoesNotCountTowardsTheSpeed() {
+        // Its samples were made before it arrived, in a time that cannot be measured
         assertEquals(0.0, buffer.arrivalSpeed)
-        buffer.write(samples(400))
-        advance(1_000)
-        buffer.write(samples(400))
+        buffer.write(samples(960))
+        advance(1_100)
+        buffer.write(samples(960))
 
-        assertEquals(0.8, buffer.arrivalSpeed, absoluteTolerance = 1e-9)
+        assertEquals(960.0 / 1_100.0, buffer.arrivalSpeed, absoluteTolerance = 1e-9)
     }
 
     @Test

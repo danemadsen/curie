@@ -495,27 +495,19 @@ class ChatViewModel(
             SpeakReplies.ALWAYS -> true
         }
 
-        // A reply that will be heard is spoken by the model itself, and plays while it is generated
-        val liveSpeech = if (wantsSpeech) LiveSpeech(speechOutput) else null
-        val mode = if (wantsSpeech) GenerationMode.SPOKEN else GenerationMode.TEXT
-        val options = ResponseOptions(mode = mode, userName = settings.userName, liveSpeech = liveSpeech?.sink)
+        // Always written: a reply to be heard is then read aloud in the Curie voice (see SystemPrompts)
+        val options = ResponseOptions(mode = GenerationMode.TEXT, userName = settings.userName)
 
-        val response = try {
-            responder.respond(chatId, messageId, options, control)
-        } catch (error: Throwable) {
-            liveSpeech?.cancel()
-            throw error
-        }
+        val response = responder.respond(chatId, messageId, options, control)
         if (response.permissionsNeeded.isNotEmpty()) {
             val permissions = response.permissionsNeeded.toList()
             eventChannel.trySend(ChatEvent.RequestPermissions(permissions))
         }
         if (!response.isComplete) {
-            liveSpeech?.cancel()
             return
         }
 
-        handleSpeech(response, wantsSpeech, liveSpeech)
+        handleSpeech(response, wantsSpeech)
 
         if (response.appLaunches.isNotEmpty()) {
             appLaunchJob = viewModelScope.launch {
@@ -561,39 +553,17 @@ class ChatViewModel(
         }
     }
 
-    /**
-     * Stores the speech of a finished answer and lets what is still playing play out. An answer the
-     * model wrote instead of speaking (it can only call tools in writing) is read aloud.
-     */
-    private suspend fun handleSpeech(response: ChatResponse, wantsSpeech: Boolean, liveSpeech: LiveSpeech?) {
+    private suspend fun handleSpeech(response: ChatResponse, wantsSpeech: Boolean) {
         val messageId = response.finalMessageId
         if (response.speech.isNotEmpty()) {
-            storeSpeech(messageId, response.speech)
-        }
-
-        if (liveSpeech != null && liveSpeech.hasStarted) {
-            liveSpeech.finish()
-            showPlayingOut(messageId)
-            return
-        }
-        if (liveSpeech != null && liveSpeech.wasRefused) {
-            notify(context.getString(R.string.audio_busy))
+            val file = storeSpeech(messageId, response.speech) ?: return
+            if (wantsSpeech) {
+                playClip(replyClipId(messageId), file)
+            }
             return
         }
         if (wantsSpeech && response.finalText.isNotBlank()) {
             readAloud(messageId, response.finalText)
-        }
-    }
-
-    /** Shows [messageId] as being read until its speech has played out; stopping it ends the speech. */
-    private fun showPlayingOut(messageId: String) {
-        speechJob = viewModelScope.launch {
-            session.update { current -> current.copy(readingMessageId = messageId) }
-            try {
-                speechOutput.awaitFinished()
-            } finally {
-                session.update { current -> current.copy(readingMessageId = null) }
-            }
         }
     }
 
