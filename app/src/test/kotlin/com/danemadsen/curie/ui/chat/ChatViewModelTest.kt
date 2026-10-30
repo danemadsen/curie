@@ -20,6 +20,7 @@ import com.danemadsen.curie.data.ChatTransfer
 import com.danemadsen.curie.data.DataTestFixture
 import com.danemadsen.curie.data.MessageRole as StoredRole
 import com.danemadsen.curie.data.Settings
+import com.danemadsen.curie.data.SpeakReplies
 import com.danemadsen.curie.engine.chat.ChatMessage
 import com.danemadsen.curie.engine.chat.ChatRole
 import com.danemadsen.curie.engine.chat.ToolCall
@@ -316,22 +317,25 @@ class ChatViewModelTest {
         tools.nextOutcome = FakeToolExecutor.success().copy(deferredLaunch = music)
         val arguments = JsonObject(emptyMap())
         fakeEngine.answer(ScriptedAnswer(toolCalls = listOf(ToolCall("set_timer", arguments))))
-        fakeEngine.answer("Playing it.")
-        fakeEngine.answer(ScriptedAnswer(audioFrames = 5))
+        fakeEngine.answer(ScriptedAnswer(text = "Playing it.", audioFrames = 5))
         viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
         viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
 
         viewModel.onAction(ChatAction.Send)
-        val answered = viewModel.awaitState { state ->
-            !state.isGenerating && state.messages.lastOrNull()?.spokenReply != null
-        }
+        viewModel.awaitState { state -> !state.isGenerating && state.messages.lastOrNull()?.spokenReply != null }
         runCurrent()
+        val answered = viewModel.awaitState { state -> state.speakingMessageId != null }
 
-        // The music app would cut the reply off, which is still being read
+        // Both rounds are spoken answers; only the last one had anything to say, and it is the one stored
+        val modes = mainConversation().generations.map { (_, request) -> request.mode }
+        assertEquals(listOf(GenerationMode.SPOKEN, GenerationMode.SPOKEN), modes)
+        assertNull(answered.messages[1].spokenReply)
+
+        // The music app would cut the reply off, which is still playing
         assertEquals(answered.messages[1].id, answered.speakingMessageId)
         assertTrue(tools.startedLaunches.value.isEmpty())
 
-        speech.finishPlaying()
+        clips.stop()
         val started = tools.startedLaunches.first { launches -> launches.isNotEmpty() }
         assertEquals(listOf(music), started)
     }
@@ -499,6 +503,32 @@ class ChatViewModelTest {
     @Test
     fun aVoiceMessageIsAnsweredAloud() = runTest(mainDispatcher) {
         val viewModel = newViewModel()
+        fakeEngine.answer(ScriptedAnswer(text = "I heard you.", audioFrames = 5))
+        viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
+        viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
+
+        viewModel.onAction(ChatAction.Send)
+        val answered = viewModel.awaitAnswer("I heard you.")
+
+        // The model speaks the answer itself: no second pass reads it aloud
+        val (_, request) = mainConversation().generations.single()
+        assertEquals(GenerationMode.SPOKEN, request.mode)
+        val speechConversations = fakeEngine.conversations.filter { conversation ->
+            conversation.capacity == ConversationSlot.SPEECH.capacity
+        }
+        assertTrue(speechConversations.isEmpty())
+        assertEquals(0, speech.answers)
+
+        // Its speech is stored with the answer and plays as a clip once the answer is complete
+        val reply = answered.messages[1]
+        assertEquals(5 * 80L, reply.spokenReply?.durationMillis)
+        assertEquals(listOf(ChatViewModel.replyClipId(reply.id)), clips.played.map { (clipId, _) -> clipId })
+    }
+
+    @Test
+    fun aSpokenAnswerThatOnlyWroteIsReadAloudInstead() = runTest(mainDispatcher) {
+        val viewModel = newViewModel()
+        // The model wrote its answer without speaking (as it does when it ends with a tool call)
         fakeEngine.answer("I heard you.")
         fakeEngine.answer(ScriptedAnswer(audioFrames = 5))
         viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
@@ -507,19 +537,39 @@ class ChatViewModelTest {
         viewModel.onAction(ChatAction.Send)
         val answered = viewModel.awaitState { state -> state.messages.getOrNull(1)?.spokenReply != null }
 
-        // The answer is written, then read aloud in the Curie voice, which only text to speech has
+        // Its text is read aloud with text to speech, and that speech is stored
         val (_, request) = mainConversation().generations.single()
-        assertEquals(GenerationMode.TEXT, request.mode)
+        assertEquals(GenerationMode.SPOKEN, request.mode)
         val speechConversation = fakeEngine.conversations.single { conversation ->
             conversation.capacity == ConversationSlot.SPEECH.capacity
         }
         assertEquals(GenerationMode.SPEECH, speechConversation.generations.single().second.mode)
         assertEquals(1, speech.answers)
         assertEquals(5 * 80 * 24, speech.samplesWritten)
-
-        // Its known length lets slow speech start late enough to play without pauses
         assertEquals(SpeakableText.estimatedSeconds("I heard you."), speech.expectedSeconds)
         assertEquals(5 * 80L, answered.messages[1].spokenReply?.durationMillis)
+        assertTrue(clips.played.isEmpty())
+    }
+
+    @Test
+    fun theSpeakRepliesSettingDecidesWhetherAnAnswerIsSpoken() = runTest(mainDispatcher) {
+        val viewModel = newViewModel()
+
+        // Always: even a typed message is answered in speech
+        settings.value = Settings(userName = "Dane", speakReplies = SpeakReplies.ALWAYS)
+        fakeEngine.answer(ScriptedAnswer(text = "Hi.", audioFrames = 2))
+        viewModel.send("Hello")
+        viewModel.awaitAnswer("Hi.")
+        assertEquals(GenerationMode.SPOKEN, mainConversation().generations.last().second.mode)
+
+        // Never: not even a voice message is
+        settings.value = Settings(userName = "Dane", speakReplies = SpeakReplies.NEVER)
+        fakeEngine.answer("Yes?")
+        viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
+        viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
+        viewModel.onAction(ChatAction.Send)
+        viewModel.awaitAnswer("Yes?")
+        assertEquals(GenerationMode.TEXT, mainConversation().generations.last().second.mode)
     }
 
     @Test
@@ -566,22 +616,22 @@ class ChatViewModelTest {
     @Test
     fun aReplyThatMayNotPlaySaysWhy() = runTest(mainDispatcher) {
         val viewModel = newViewModel()
-        speech.refusesToPlay = true
-        fakeEngine.answer("I heard you.")
+        clips.refusesToPlay = true
+        fakeEngine.answer(ScriptedAnswer(text = "I heard you.", audioFrames = 5))
         viewModel.addMedia(fixture.sourceUri("AUDIO 2000"))
         viewModel.awaitState { state -> state.composer.attachments.isNotEmpty() }
 
         viewModel.onAction(ChatAction.Send)
         val notice = viewModel.events.first()
 
-        // Another app has the audio: nothing is read aloud, and the answer can be read later
+        // Another app has the audio: the speech is kept for later, and it is not read aloud instead
         val expected = fixture.context.getString(R.string.audio_busy)
         assertEquals(ChatEvent.Notice(expected), notice)
-        val speechConversations = fakeEngine.conversations.filter { conversation ->
-            conversation.capacity == ConversationSlot.SPEECH.capacity
-        }
-        assertTrue(speechConversations.isEmpty())
         viewModel.awaitAnswer("I heard you.")
+        viewModel.awaitState { state -> state.messages.getOrNull(1)?.spokenReply != null }
+        assertEquals(GenerationMode.SPOKEN, mainConversation().generations.single().second.mode)
+        assertEquals(0, speech.answers)
+        assertTrue(fakeEngine.conversations.none { conversation -> conversation.capacity == ConversationSlot.SPEECH.capacity })
     }
 
     @Test

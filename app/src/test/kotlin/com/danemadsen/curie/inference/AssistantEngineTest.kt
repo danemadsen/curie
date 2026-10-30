@@ -180,6 +180,30 @@ class AssistantEngineTest {
     }
 
     @Test
+    fun aSpeakingModeLeavesAPositionForItsMarker() = runTest {
+        val (engine, scope) = newEngine()
+        fakeEngine.answer("Text")
+        fakeEngine.answer("Spoken")
+
+        // A last turn so long that the answer gets only the room that is left
+        val capacity = ConversationSlot.MAIN.capacity
+        val longQuestion = listOf(ChatMessage.system("You are Curie."), ChatMessage.user("x".repeat(capacity - 700)))
+        val wanted = 1_024
+        engine.generate(ConversationSlot.MAIN, longQuestion, emptyList(), textRequest.copy(maxNewSlots = wanted), silent)
+        val spoken = GenerationRequest(mode = GenerationMode.SPOKEN, maxNewSlots = wanted)
+        engine.generate(ConversationSlot.MAIN, longQuestion, emptyList(), spoken, silent)
+
+        // The text answer takes all the room; the spoken one feeds <|mixed_start|> first and keeps a position for it
+        val generations = fakeEngine.conversations.single().generations
+        val (textPrompt, textFitted) = generations[0]
+        val (spokenPrompt, spokenFitted) = generations[1]
+        assertTrue(textFitted.maxNewSlots < wanted)
+        assertEquals(capacity, textPrompt.length + textFitted.maxNewSlots)
+        assertEquals(capacity, spokenPrompt.length + 1 + spokenFitted.maxNewSlots)
+        scope.cancel()
+    }
+
+    @Test
     fun cancelEndsTheRunningGenerationWithWhatItSaid() = runTest {
         val executor = Executors.newSingleThreadExecutor()
         val engineThread = executor.asCoroutineDispatcher()

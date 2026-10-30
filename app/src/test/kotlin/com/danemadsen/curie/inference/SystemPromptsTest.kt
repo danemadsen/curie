@@ -10,8 +10,8 @@ class SystemPromptsTest {
     private val today = LocalDate.of(2026, 10, 30)
 
     @Test
-    fun answersAreWrittenSoThatTheCurieVoiceReadsThem() {
-        // The voice LoRA only speaks in the TTS format: an interleaved answer would have the base voice
+    fun spokenAnswersNeedNoModalityLine() {
+        // The engine opens a spoken answer with the interleaving marker itself
         val prompts = listOf(SystemPrompts.chat("Dane", today), SystemPrompts.call("Dane", today))
         for (prompt in prompts) {
             assertFalse(prompt.contains("interleaved", ignoreCase = true), prompt)

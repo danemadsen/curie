@@ -53,6 +53,23 @@ class GenerationStartTest {
     }
 
     @Test
+    fun spokenStartsAsTextToReadTheFirstTokenAndThenSpeaksAsInterleaved() {
+        val start = GenerationStart.of(GenerationMode.SPOKEN, plainToken, null)
+
+        // Nothing is appended and the markers are suppressed, exactly as for text
+        val text = GenerationStart.of(GenerationMode.TEXT, plainToken, null)
+        assertNull(start.marker)
+        assertEquals(SlotMode.TEXT, start.mode)
+        assertEquals(text.suppressed.toSet(), start.suppressed.toSet())
+
+        // A spoken answer that does not open with a tool call carries on as an interleaved one
+        val speech = GenerationStart.SPOKEN_SPEECH
+        assertEquals(Lfm3Omni.MIXED_START_TOKEN, speech.marker)
+        assertEquals(SlotMode.INTERLEAVED, speech.mode)
+        assertEquals(Lfm3Omni.PLACEHOLDER_TOKENS.toSet(), speech.suppressed.toSet())
+    }
+
+    @Test
     fun autoReadsTheModeFromTheLastToken() {
         val cases = mapOf(
             Pair(plainToken, null) to SlotMode.TEXT,

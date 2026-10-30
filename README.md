@@ -13,8 +13,10 @@ answers in text, in speech with its own voice, or in both at once.
 
 - **Text, photos, videos and voice in.** A message can combine text with images, video clips
   (with their soundtrack) and recorded speech.
-- **Text and speech out.** Curie answers in text, in speech, or in text and speech interleaved,
-  streamed as the model generates them. A bundled LoRA adapter gives the speech the Curie voice.
+- **Text and speech out.** Curie answers in text, in speech, or in text and speech interleaved. A
+  bundled LoRA adapter gives the speech its Curie voice: strongly when a written text is read
+  aloud, only in part in the model's own spoken answers (see
+  [Where the voice applies](#where-the-voice-applies)).
 
 In development (these may be missing from current builds):
 
@@ -48,7 +50,7 @@ revision, update `REVISION` and every size and SHA-256 together, update `MODEL_R
 | File | What it is |
 | --- | --- |
 | `decoder_q4.lora.onnx`, `depth_decoder.lora.onnx` | The model's `decoder_q4` and `depth_decoder` graphs (no weights) with a LoRA branch added to every adapted projection |
-| `decoder_q4.onnx_adapter`, `depth_decoder.onnx_adapter` | The LoRA matrices, a PEFT adapter trained on [LFM3-Audio-2B](https://huggingface.co/LiquidAI/LFM3-Audio-2B), whose language model and depth decoder LFM3-Omni-2B shares |
+| `decoder_q4.onnx_adapter`, `depth_decoder.onnx_adapter` | The LoRA matrices, a rank 16 PEFT adapter trained on [LFM3-Audio-2B](https://huggingface.co/LiquidAI/LFM3-Audio-2B) |
 
 ONNX Runtime applies the adapter at run time (`OrtLoraAdapter` and
 `RunOptions.addActiveLoraAdapter`); without it, the patched graphs compute the base model. The
@@ -88,6 +90,49 @@ It checks that the patched graphs compute the original model without the adapter
 patched depth decoder with the adapter matches the original one with the LoRA merged into its
 weights, and that the adapter changes the decoder's output.
 
+#### Where the voice applies
+
+The engine runs every decoder and depth decoder step of every generation mode with the adapter, so
+no mode skips it. A one-off comparison (not part of this repository) found that it shapes a text
+read aloud much more than the model's own spoken answers.
+
+It generated 80 clips with the real model on the desktop build of ONNX Runtime: ten sentences read
+aloud (`GenerationMode.SPEECH`) and ten questions answered in speech (`GenerationMode.SPOKEN`), in
+two prompt settings each, with and without the adapter. It scored them with ECAPA-TDNN speaker
+embeddings, the speaker model of the training notebook, as cosine similarity to a reference voice:
+the centroid of the adapter's own read-aloud clips under the prompt it was trained with, because the
+original recordings were not at hand. So a score says how close a clip is to what the adapter makes
+of a text read aloud, not to the Curie recordings, and nobody has listened to the clips.
+
+| Format | Without the adapter | With the adapter |
+| --- | --- | --- |
+| Text read aloud, the model card's TTS prompt | -0.08 | 0.76 |
+| Text read aloud, the prompt it was trained with | -0.04 | 0.76 |
+| Spoken answer, the model card's one-line instruction | -0.05 | 0.18 |
+| Spoken answer, Curie's chat system prompt | -0.02 | 0.18 |
+
+- The read-aloud voice does not depend on the prompt text: the two prompts give voices that score
+  0.96 with each other.
+- The adapter acts on spoken answers too: every spoken clip with it scored above every spoken clip
+  without it (the lowest 0.12, the highest without 0.05). But the gain is about a quarter of the
+  read-aloud gain, and for scale, read-aloud clips of the same voice score about 0.6 with each other.
+
+Why is not settled; the comparison does not separate these possible reasons:
+
+- **One kind of example.** The adapter was trained with Liquid's TTS fine-tuning notebook on the
+  Curie recordings: a short text read aloud, under the single system prompt `Perform TTS in English
+  using Curie's voice.`, with the speech frames straight after `<|audio_start|>`. Nothing in that
+  notebook covers interleaved text and speech, a persona prompt, tools or earlier turns.
+- **Another base model.** LFM3-Omni-2B, which Curie runs, does not have the same language model and
+  depth decoder weights as LFM3-Audio-2B. On three tensors compared they differ by 11 to 23 percent
+  in relative norm, against about 3 percent for the adapter's own change.
+- **A 4-bit decoder.** The adapter's low-rank branch runs in float next to a 4-bit `decoder_q4`, and
+  `verify-lora-assets.py` only checks that it moves the decoder's output, not that it matches the
+  trained model.
+
+Whether training the adapter on LFM3-Omni-2B, with interleaved examples, closes the gap has not been
+tried.
+
 ## Architecture
 
 | Path | Contents |
@@ -102,9 +147,9 @@ The engine's public API:
 - `OmniEngine` opens `Conversation`s, each with its own KV cache, so a short-lived one (text to
   speech) does not evict a chat's. A conversation keeps the longest cached prefix of each new
   prompt, because prefill dominates the time on a phone.
-- `Conversation.generate` takes a `Prompt` and a `GenerationRequest` (text, automatic, speech or
-  interleaved mode) and streams the answer to a `GenerationListener`; `Conversation.prefill` fills
-  the cache ahead of time, for example with the system prompt.
+- `Conversation.generate` takes a `Prompt` and a `GenerationRequest` (text, automatic, speech,
+  interleaved or spoken mode) and streams the answer to a `GenerationListener`;
+  `Conversation.prefill` fills the cache ahead of time, for example with the system prompt.
 - `SpeechDecoder` turns speech frames into 24 kHz audio as they arrive.
 - `ChatMessage` and `ContentPart` describe the conversation, `Lfm3Omni` holds the model's constants,
   `ModelFiles` the pinned download, and `MediaGeometry` the image, video and audio sizing of the

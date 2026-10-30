@@ -18,8 +18,8 @@ The Curie voice (assets/lora in the app package)
     decoder_q4.lora.onnx and depth_decoder.lora.onnx are modified copies of the
     decoder_q4.onnx and depth_decoder.onnx graphs of LFM3-Omni-2B-ONNX: Curie added
     LoRA inputs to them. decoder_q4.onnx_adapter and depth_decoder.onnx_adapter hold a
-    LoRA adapter for LiquidAI/LFM3-Audio-2B, whose language model and depth decoder
-    LFM3-Omni-2B shares.
+    LoRA adapter trained on LiquidAI/LFM3-Audio-2B, which Curie applies to the
+    corresponding weights of LFM3-Omni-2B.
     License: LFM Open License v1.0 (lfm-open-license-1.0.txt)
 
 

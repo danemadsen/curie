@@ -181,12 +181,15 @@ class AssistantEngine(
     ): GenerationResult {
         return withModel { loadedModel ->
             val conversation = conversationOf(loadedModel, slot)
+
+            // The marker a speaking mode opens its answer with takes a position of its own
+            val markerSlots = if (request.mode in MARKED_MODES) 1 else 0
             val fitted = withContext(engineDispatcher) {
                 ContextFitter.fit(
                     messages = messages,
                     tools = tools,
                     capacity = conversation.capacity,
-                    wantedNewSlots = request.maxNewSlots,
+                    wantedNewSlots = request.maxNewSlots + markerSlots,
                     renderer = loadedModel.renderer,
                     window = window,
                 )
@@ -194,7 +197,7 @@ class AssistantEngine(
             if (fitted.droppedMessages > 0) {
                 Log.i(TAG, "left ${fitted.droppedMessages} old messages out of the ${slot.name} prompt")
             }
-            val fittedRequest = request.copy(maxNewSlots = fitted.maxNewSlots)
+            val fittedRequest = request.copy(maxNewSlots = fitted.maxNewSlots - markerSlots)
 
             // While it runs (and when it fails) the cache is somewhere between two prompts
             loadedModel.lastPrompts.remove(slot)
@@ -710,6 +713,9 @@ class AssistantEngine(
 
         private val END_OF_SPEECH = IntArray(0)
         private val SILENT_LISTENER = object : GenerationListener {}
+
+        /** The modes whose answers open with a marker token (<|audio_start|> or <|mixed_start|>). */
+        private val MARKED_MODES = setOf(GenerationMode.SPEECH, GenerationMode.INTERLEAVED, GenerationMode.SPOKEN)
 
         /** True when [prompt] begins with every slot of [prefix]. */
         internal fun startsWith(prompt: Prompt, prefix: Prompt): Boolean {

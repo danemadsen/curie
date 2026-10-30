@@ -5,9 +5,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * The system prompts Curie sends. Answers are always written and then read aloud with the model
- * card's TTS prompt: the Curie voice LoRA only speaks in that format, and the model's own spoken
- * answers (interleaved text and audio) keep its base voice.
+ * The system prompts Curie sends. A text is read aloud with the model card's TTS prompt, the
+ * format the Curie voice LoRA was trained on. A spoken answer (interleaved text and audio) needs
+ * no modality line, because the engine opens it with the interleaving marker itself; it carries the
+ * Curie voice only in part (see the README).
  *
  * A system prompt opens every conversation's cache, so it only changes when its inputs do: the date
  * is day-granular and the time of day comes from a tool instead.

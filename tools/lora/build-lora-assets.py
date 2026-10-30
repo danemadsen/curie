@@ -11,9 +11,9 @@
 Builds the LoRA assets that ship inside the Curie APK.
 
 The base LFM3-Omni weights are downloaded by the app at runtime. The Curie voice LoRA (a PEFT adapter
-trained on LFM3-Audio-2B, whose language model and depth decoder LFM3-Omni-2B shares) is bundled. ONNX
-Runtime applies LoRA adapters by feeding their tensors as graph inputs (OrtLoraAdapter +
-RunOptions.addActiveLoraAdapter), so this script:
+trained on LFM3-Audio-2B, applied here to the corresponding weights of LFM3-Omni-2B, which are not the
+same weights) is bundled. ONNX Runtime applies LoRA adapters by feeding their tensors as graph inputs
+(OrtLoraAdapter + RunOptions.addActiveLoraAdapter), so this script:
 
     1. downloads the decoder_q4 and depth_decoder graph files (no weights) at the pinned revision,
     2. adds a LoRA branch next to every targeted projection:

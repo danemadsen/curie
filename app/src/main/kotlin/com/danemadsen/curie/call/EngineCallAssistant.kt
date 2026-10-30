@@ -30,7 +30,8 @@ class EngineCallAssistant(private val engine: AssistantEngine) : CallAssistant {
         window: ContextWindow,
         allowToolCalls: Boolean,
     ): GenerationResult {
-        // Written, then read aloud in the Curie voice, which only the TTS format has
+        // Written, then read aloud (synthesize) in the voice the LoRA was trained on, which the
+        // model's own spoken answers carry only in part
         val request = GenerationRequest(
             mode = GenerationMode.TEXT,
             maxNewSlots = ANSWER_SLOTS,
@@ -54,7 +55,7 @@ class EngineCallAssistant(private val engine: AssistantEngine) : CallAssistant {
     }
 
     private companion object {
-        /** About 40 seconds of interleaved speech: the call's style asks for one to three sentences. */
+        /** Slots of written answer: the call's style asks for one to three sentences. */
         const val ANSWER_SLOTS = 768
     }
 }

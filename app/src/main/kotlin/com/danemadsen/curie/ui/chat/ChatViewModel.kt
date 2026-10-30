@@ -495,8 +495,10 @@ class ChatViewModel(
             SpeakReplies.ALWAYS -> true
         }
 
-        // Always written: a reply to be heard is then read aloud in the Curie voice (see SystemPrompts)
-        val options = ResponseOptions(mode = GenerationMode.TEXT, userName = settings.userName)
+        // A reply to be heard is spoken by the model itself, interleaved with its text; its speech is
+        // stored and plays once the answer is complete
+        val mode = if (wantsSpeech) GenerationMode.SPOKEN else GenerationMode.TEXT
+        val options = ResponseOptions(mode = mode, userName = settings.userName)
 
         val response = responder.respond(chatId, messageId, options, control)
         if (response.permissionsNeeded.isNotEmpty()) {
