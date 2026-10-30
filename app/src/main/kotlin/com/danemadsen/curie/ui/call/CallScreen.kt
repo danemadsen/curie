@@ -57,18 +57,14 @@ import com.danemadsen.curie.ui.format.formatCallDuration
 import com.danemadsen.curie.ui.theme.DarkCurieTheme
 import kotlinx.coroutines.flow.collectLatest
 
-/** The universal hang-up red, so the end button reads the same as in any phone app. */
-private val END_CALL_COLOR = Color(0xFFE53935)
-
-private val CALL_BACKGROUND = Color.Black
-private val TOGGLE_OFF_BACKGROUND = Color.White.copy(alpha = 0.12f)
 private const val CAPTION_LINES = 3
 
 /** The eclipse and the heading sit a little above the middle: 60 % of their spare room is above. */
 private val ART_ALIGNMENT = BiasAlignment.Vertical(0.2f)
 
 /**
- * A phone call with the assistant, always in dark colours on black: the solar eclipse whose
+ * A phone call with the assistant, always in the dark variant of the app's colours (the phone's
+ * Material You palette, when it has one and the user allows it): the solar eclipse whose
  * corona moves with the phase and flares with [audioLevel], the assistant's name, the call time
  * and what is happening, live captions of the user's last words and the answer being spoken, and
  * mute, end-call and speaker buttons. The buttons always fit: the eclipse shrinks on short
@@ -89,7 +85,7 @@ fun CallScreen(
     DarkCurieTheme {
         val screenModifier = modifier
             .fillMaxSize()
-            .background(CALL_BACKGROUND)
+            .background(MaterialTheme.colorScheme.surface)
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(horizontal = 24.dp)
 
@@ -308,7 +304,7 @@ private fun CallControls(
     }
 }
 
-/** A round on/off button with its [label] below; when on, it turns white with a dark icon. */
+/** A round on/off button with its [label] below; when on, it is filled with the primary colour. */
 @Composable
 private fun CallToggleButton(
     @DrawableRes icon: Int,
@@ -316,8 +312,9 @@ private fun CallToggleButton(
     checked: Boolean,
     onToggle: () -> Unit,
 ) {
-    val background = if (checked) Color.White else TOGGLE_OFF_BACKGROUND
-    val iconTint = if (checked) Color.Black else Color.White
+    val colors = MaterialTheme.colorScheme
+    val background = if (checked) colors.primary else colors.surfaceVariant
+    val iconTint = if (checked) colors.onPrimary else colors.onSurfaceVariant
     val toggleModifier = Modifier.toggleable(
         value = checked,
         role = Role.Switch,
@@ -335,16 +332,18 @@ private fun CallToggleButton(
     }
 }
 
+/** The destructive action, in the error colour like the app's other danger buttons. */
 @Composable
 private fun EndCallButton(onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
     val buttonModifier = Modifier.clickable(role = Role.Button, onClick = onClick)
 
     Column(modifier = buttonModifier, horizontalAlignment = Alignment.CenterHorizontally) {
         RoundIcon(
             icon = R.drawable.tabler_phone_off,
             size = 72.dp,
-            background = END_CALL_COLOR,
-            tint = Color.White,
+            background = colors.error,
+            tint = colors.onError,
         )
         Text(
             text = stringResource(R.string.call_end),
