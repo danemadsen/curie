@@ -30,7 +30,9 @@ enum class EclipseMood {
  * A photographic total solar eclipse, the centrepiece of the call screen: a black Moon ringed by the bright
  * inner corona, long streamers and fine filaments that slowly morph, and a deep twilight sky. It fills its
  * bounds (meant to be a square about as wide as the screen), centred, and fades out before reaching their
- * edges, so it blends into any dark background. It is purely decorative.
+ * edges, so it blends into any dark background. On a light one ([onLightBackground]) it is drawn as its
+ * photographic negative instead: black flares round a Moon as light as the page, fading into it just the same.
+ * It is purely decorative.
  *
  * [level] is the audio level from 0 to 1 (the user's voice while they speak, Curie's while she speaks). It is
  * read on every frame while drawing, so back it with something cheap to read such as a volatile field; it
@@ -43,8 +45,19 @@ enum class EclipseMood {
  * With the system's "Remove animations" setting on, the corona holds still and only reacts to [level].
  */
 @Composable
-fun SolarEclipse(mood: EclipseMood, level: () -> Float, modifier: Modifier = Modifier) {
-    EclipseScene(mood = mood, level = level, useShader = true, modifier = modifier)
+fun SolarEclipse(
+    mood: EclipseMood,
+    level: () -> Float,
+    modifier: Modifier = Modifier,
+    onLightBackground: Boolean = false,
+) {
+    EclipseScene(
+        mood = mood,
+        level = level,
+        useShader = true,
+        onLightBackground = onLightBackground,
+        modifier = modifier,
+    )
 }
 
 /** Previews show each mood with the voice at a typical level. */
@@ -58,4 +71,15 @@ internal class EclipseMoodPreviewProvider : PreviewParameterProvider<EclipseMood
 @Composable
 private fun SolarEclipsePreview(@PreviewParameter(EclipseMoodPreviewProvider::class) mood: EclipseMood) {
     SolarEclipse(mood = mood, level = { PREVIEW_LEVEL }, modifier = Modifier.fillMaxSize())
+}
+
+@Preview(widthDp = 360, heightDp = 360, showBackground = true, backgroundColor = 0xFFFFFBFE)
+@Composable
+private fun SolarEclipseOnLightPreview(@PreviewParameter(EclipseMoodPreviewProvider::class) mood: EclipseMood) {
+    SolarEclipse(
+        mood = mood,
+        level = { PREVIEW_LEVEL },
+        modifier = Modifier.fillMaxSize(),
+        onLightBackground = true,
+    )
 }

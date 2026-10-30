@@ -13,7 +13,6 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -27,9 +26,6 @@ enum class ThemeMode {
 
 /** Maid's default accent colour, the seed of the colour scheme. */
 val DEFAULT_ACCENT_COLOR = Color(0xFF2196F3)
-
-private val LocalAccentColor = staticCompositionLocalOf { DEFAULT_ACCENT_COLOR }
-private val LocalUsesSystemColors = staticCompositionLocalOf { false }
 
 /** Whether the phone has a system palette apps can take their colours from (Material You). */
 val areSystemColorsAvailable: Boolean
@@ -75,22 +71,9 @@ fun CurieTheme(
         CompositionLocalProvider(
             LocalIndication provides OpacityIndication.DEFAULT,
             LocalContentColor provides colorScheme.onSurface,
-            LocalAccentColor provides accentColor,
-            LocalUsesSystemColors provides useSystemColors,
             content = content,
         )
     }
-}
-
-/** The surrounding theme's colours in their dark variant, for screens that are always dark (the call). */
-@Composable
-fun DarkCurieTheme(content: @Composable () -> Unit) {
-    CurieTheme(
-        themeMode = ThemeMode.DARK,
-        accentColor = LocalAccentColor.current,
-        useSystemColors = LocalUsesSystemColors.current,
-        content = content,
-    )
 }
 
 /** The system's Material You scheme, from the wallpaper or the accent the user picked. */
