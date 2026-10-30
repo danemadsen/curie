@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,7 +55,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.danemadsen.curie.R
 import com.danemadsen.curie.ui.format.formatCallDuration
-import com.danemadsen.curie.ui.theme.DarkCurieTheme
 import kotlinx.coroutines.flow.collectLatest
 
 private const val CAPTION_LINES = 3
@@ -63,9 +63,10 @@ private const val CAPTION_LINES = 3
 private val ART_ALIGNMENT = BiasAlignment.Vertical(0.2f)
 
 /**
- * A phone call with the assistant, always in the dark variant of the app's colours (the phone's
- * Material You palette, when it has one and the user allows it): the solar eclipse whose
- * corona moves with the phase and flares with [audioLevel], the assistant's name, the call time
+ * A phone call with the assistant, in the app's colours like every other screen (the phone's
+ * Material You palette, when it has one and the user allows it), light or dark: the solar eclipse
+ * whose corona moves with the phase and flares with [audioLevel] (on a light page it is the
+ * eclipse's negative, black flares round a light Moon), the assistant's name, the call time
  * and what is happening, live captions of the user's last words and the answer being spoken, and
  * mute, end-call and speaker buttons. The buttons always fit: the eclipse shrinks on short
  * screens, and a screen wider than tall (landscape) shows the eclipse beside the captions and
@@ -82,19 +83,17 @@ fun CallScreen(
     modifier: Modifier = Modifier,
     audioLevel: () -> Float = { 0f },
 ) {
-    DarkCurieTheme {
-        val screenModifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(horizontal = 24.dp)
+    val screenModifier = modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.surface)
+        .windowInsetsPadding(WindowInsets.safeDrawing)
+        .padding(horizontal = 24.dp)
 
-        BoxWithConstraints(modifier = screenModifier) {
-            if (maxWidth > maxHeight) {
-                WideCallLayout(state = state, onAction = onAction, audioLevel = audioLevel)
-            } else {
-                TallCallLayout(state = state, onAction = onAction, audioLevel = audioLevel)
-            }
+    BoxWithConstraints(modifier = screenModifier) {
+        if (maxWidth > maxHeight) {
+            WideCallLayout(state = state, onAction = onAction, audioLevel = audioLevel)
+        } else {
+            TallCallLayout(state = state, onAction = onAction, audioLevel = audioLevel)
         }
     }
 }
@@ -157,8 +156,14 @@ private fun CallArt(state: CallUiState, audioLevel: () -> Float, modifier: Modif
         val eclipseModifier = Modifier
             .weight(1f, fill = false)
             .aspectRatio(1f)
+        val onLightBackground = MaterialTheme.colorScheme.surface.luminance() >= 0.5f
 
-        SolarEclipse(mood = eclipseMood(state), level = audioLevel, modifier = eclipseModifier)
+        SolarEclipse(
+            mood = eclipseMood(state),
+            level = audioLevel,
+            modifier = eclipseModifier,
+            onLightBackground = onLightBackground,
+        )
         CallHeading(state = state)
     }
 }

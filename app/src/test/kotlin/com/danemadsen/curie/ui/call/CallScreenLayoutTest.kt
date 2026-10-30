@@ -7,6 +7,8 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.toSize
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.danemadsen.curie.ui.preview.PreviewData
+import com.danemadsen.curie.ui.theme.CurieTheme
+import com.danemadsen.curie.ui.theme.ThemeMode
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -49,12 +51,23 @@ class CallScreenLayoutTest {
         assertControlsOnScreen()
     }
 
-    private fun showCall() {
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-port")
+    fun theButtonsFitASmallPhoneOnALightPage() {
+        // The eclipse is drawn as its negative on a light page
+        showCall(ThemeMode.LIGHT)
+
+        assertControlsOnScreen()
+    }
+
+    private fun showCall(themeMode: ThemeMode = ThemeMode.DARK) {
         // The eclipse animates every frame for as long as it is shown: let only the layout settle
         composeRule.mainClock.autoAdvance = false
 
         composeRule.setContent {
-            CallScreen(state = PreviewData.CALL, onAction = {})
+            CurieTheme(themeMode = themeMode) {
+                CallScreen(state = PreviewData.CALL, onAction = {})
+            }
         }
         composeRule.mainClock.advanceTimeByFrame()
     }

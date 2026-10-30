@@ -17,10 +17,17 @@ import com.danemadsen.curie.ui.call.EclipseMood
 
 /**
  * The eclipse, drawn by the AGSL shader when [useShader] is set and the device supports it (Android 13+),
- * otherwise by the bitmap fallback. Previews show one still frame.
+ * otherwise by the bitmap fallback. On a light page ([onLightBackground]) it is drawn as its negative
+ * (see [drawAsNegative]). Previews show one still frame.
  */
 @Composable
-internal fun EclipseScene(mood: EclipseMood, level: () -> Float, useShader: Boolean, modifier: Modifier = Modifier) {
+internal fun EclipseScene(
+    mood: EclipseMood,
+    level: () -> Float,
+    useShader: Boolean,
+    onLightBackground: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val isPreview = LocalInspectionMode.current
     val frame = rememberEclipseFrame(mood = mood, level = level, animate = !isPreview)
     val shader = remember(useShader, isPreview) {
@@ -33,7 +40,8 @@ internal fun EclipseScene(mood: EclipseMood, level: () -> Float, useShader: Bool
     }
 
     // A layer of its own, so redrawing every frame does not re-record the screen around it.
-    val sceneModifier = modifier.graphicsLayer()
+    val pageModifier = if (onLightBackground) modifier.drawAsNegative() else modifier
+    val sceneModifier = pageModifier.graphicsLayer()
 
     if (shader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         ShaderEclipse(shader = shader, frame = frame, modifier = sceneModifier)

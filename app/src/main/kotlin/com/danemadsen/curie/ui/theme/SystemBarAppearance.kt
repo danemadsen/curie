@@ -11,8 +11,7 @@ import androidx.core.view.WindowCompat
 /**
  * Colours the status and navigation bar icons for the content drawn behind them (edge to edge, the
  * bars have no background of their own). While this effect is in the composition the icons are dark
- * when [useDarkIcons] is true; leaving the composition restores what was there before, so a screen
- * that is always dark can nest it inside the app theme.
+ * when [useDarkIcons] is true; leaving the composition restores what was there before.
  */
 @Composable
 internal fun SystemBarAppearanceEffect(useDarkIcons: Boolean) {

@@ -119,7 +119,13 @@ private fun ComposerPreview() {
     }
 }
 
-@Preview(name = "Call", widthDp = PHONE_WIDTH, heightDp = PHONE_HEIGHT)
+@Preview(
+    name = "Call (dark)",
+    widthDp = PHONE_WIDTH,
+    heightDp = PHONE_HEIGHT,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Preview(name = "Call (light)", widthDp = PHONE_WIDTH, heightDp = PHONE_HEIGHT)
 @Composable
 private fun CallScreenPreview() {
     CurieTheme {
